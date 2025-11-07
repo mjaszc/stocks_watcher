@@ -1,19 +1,21 @@
 import pandas as pd
 import uuid
-from db.engine import engine
+from backend.db.engine import engine
 from sqlalchemy.dialects.postgresql import insert
-from models.stock_data import StockData
+from backend.models.stock_data import StockData
 
 # Example dataset
-df = pd.read_csv("datasets/googl_us_d.csv")
+df = pd.read_csv("backend/datasets/googl_us_d.csv", parse_dates=["Date"], dayfirst=True)
 
+
+# Initial loading historical data to database
 data_to_insert = []
 for _, row in df.iterrows():
     data_to_insert.append(
         {
             "id": uuid.uuid4(),
             "symbol": "GOOGL.US",
-            "date": pd.to_datetime(row["Date"], format="%d/%m/%Y"),
+            "date": row["Date"].strftime("%Y-%m-%d"),
             "open": row["Open"],
             "high": row["High"],
             "low": row["Low"],
