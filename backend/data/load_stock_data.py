@@ -116,9 +116,9 @@ def calculate_normalized_prices_for_1m_tf() -> None:
     today_date = datetime(2025, 11, 5)
 
     df["Date"] = pd.to_datetime(df["Date"])
-    thirty_days_ago = pd.Timestamp(today_date) - pd.Timedelta(days=30)
+    one_month_ago_range = pd.Timestamp(today_date) - pd.DateOffset(months=1)
 
-    recent_dates = df[df["Date"] >= thirty_days_ago]
+    recent_dates = df[df["Date"] >= one_month_ago_range]
     # print(recent_dates[["Date", "Close"]])
 
     with Session() as db:
@@ -146,6 +146,176 @@ def calculate_normalized_prices_for_1m_tf() -> None:
             raise
 
 
+def calculate_normalized_prices_for_3m_tf() -> None:
+    today_date = datetime(2025, 11, 5)
+
+    df["Date"] = pd.to_datetime(df["Date"])
+    three_months_ago = pd.Timestamp(today_date) - pd.DateOffset(months=3)
+
+    recent_dates = df[df["Date"] >= three_months_ago]
+
+    with Session() as db:
+        try:
+            for _, row in recent_dates.iterrows():
+                close_price = Decimal(str(row["Close"]))
+
+                normalized_price: Decimal = calculate_normalized_price(
+                    base_price_3m, close_price
+                )
+                db.execute(
+                    text(
+                        """
+                        UPDATE stock_data
+                        SET norm_3m = :norm_3m_price
+                        WHERE "date" = :date
+                        """
+                    ),
+                    {"norm_3m_price": normalized_price, "date": row["Date"]},
+                )
+                db.commit()
+        except Exception as e:
+            print(f"Error updating database: {e}")
+            db.rollback()
+            raise
+
+
+def calculate_normalized_prices_for_6m_tf() -> None:
+    today_date = datetime(2025, 11, 5)
+
+    df["Date"] = pd.to_datetime(df["Date"])
+    six_months_ago = pd.Timestamp(today_date) - pd.DateOffset(months=6)
+
+    recent_dates = df[df["Date"] >= six_months_ago]
+
+    with Session() as db:
+        try:
+            for _, row in recent_dates.iterrows():
+                close_price = Decimal(str(row["Close"]))
+
+                normalized_price: Decimal = calculate_normalized_price(
+                    base_price_6m, close_price
+                )
+                db.execute(
+                    text(
+                        """
+                        UPDATE stock_data
+                        SET norm_6m = :norm_6m_price
+                        WHERE "date" = :date
+                        """
+                    ),
+                    {"norm_6m_price": normalized_price, "date": row["Date"]},
+                )
+                db.commit()
+        except Exception as e:
+            print(f"Error updating database: {e}")
+            db.rollback()
+            raise
+
+
+def calculate_normalized_prices_for_1y_tf() -> None:
+    today_date = datetime(2025, 11, 5)
+
+    df["Date"] = pd.to_datetime(df["Date"])
+    one_year_ago = pd.Timestamp(today_date) - pd.DateOffset(years=1)
+
+    recent_dates = df[df["Date"] >= one_year_ago]
+
+    with Session() as db:
+        try:
+            for _, row in recent_dates.iterrows():
+                close_price = Decimal(str(row["Close"]))
+
+                normalized_price: Decimal = calculate_normalized_price(
+                    base_price_1y, close_price
+                )
+                db.execute(
+                    text(
+                        """
+                        UPDATE stock_data
+                        SET norm_1y = :norm_1y_price
+                        WHERE "date" = :date
+                        """
+                    ),
+                    {"norm_1y_price": normalized_price, "date": row["Date"]},
+                )
+                db.commit()
+        except Exception as e:
+            print(f"Error updating database: {e}")
+            db.rollback()
+            raise
+
+
+def calculate_normalized_prices_for_5y_tf() -> None:
+    today_date = datetime(2025, 11, 5)
+
+    df["Date"] = pd.to_datetime(df["Date"])
+    five_years_ago = pd.Timestamp(today_date) - pd.DateOffset(years=5)
+
+    recent_dates = df[df["Date"] >= five_years_ago]
+
+    with Session() as db:
+        try:
+            for _, row in recent_dates.iterrows():
+                close_price = Decimal(str(row["Close"]))
+
+                normalized_price: Decimal = calculate_normalized_price(
+                    base_price_5y, close_price
+                )
+                db.execute(
+                    text(
+                        """
+                        UPDATE stock_data
+                        SET norm_5y = :norm_5y_price
+                        WHERE "date" = :date
+                        """
+                    ),
+                    {"norm_5y_price": normalized_price, "date": row["Date"]},
+                )
+                db.commit()
+        except Exception as e:
+            print(f"Error updating database: {e}")
+            db.rollback()
+            raise
+
+
+def calculate_normalized_prices_for_20y_tf() -> None:
+    today_date = datetime(2025, 11, 5)
+
+    df["Date"] = pd.to_datetime(df["Date"])
+    five_years_ago = pd.Timestamp(today_date) - pd.DateOffset(years=20)
+
+    recent_dates = df[df["Date"] >= five_years_ago]
+
+    with Session() as db:
+        try:
+            for _, row in recent_dates.iterrows():
+                close_price = Decimal(str(row["Close"]))
+
+                normalized_price: Decimal = calculate_normalized_price(
+                    base_price_20y, close_price
+                )
+                db.execute(
+                    text(
+                        """
+                        UPDATE stock_data
+                        SET norm_20y = :norm_20y_price
+                        WHERE "date" = :date
+                        """
+                    ),
+                    {"norm_20y_price": normalized_price, "date": row["Date"]},
+                )
+                db.commit()
+        except Exception as e:
+            print(f"Error updating database: {e}")
+            db.rollback()
+            raise
+
+
 extracted_base_prices = get_base_prices()
 update_prices(extracted_base_prices)
 calculate_normalized_prices_for_1m_tf()
+calculate_normalized_prices_for_3m_tf()
+calculate_normalized_prices_for_6m_tf()
+calculate_normalized_prices_for_1y_tf()
+calculate_normalized_prices_for_5y_tf()
+calculate_normalized_prices_for_20y_tf()
