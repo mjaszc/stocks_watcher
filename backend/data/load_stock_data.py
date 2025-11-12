@@ -18,15 +18,14 @@ class StockDataLoader:
     base_price_5y = Decimal("0.00")
     base_price_20y = Decimal("0.00")
 
-    # Put only path to dataset in initialization argument
-    def __init__(self, dataset: str):
+    def __init__(self, dataset: str, symbol: str):
         self.df = pd.read_csv(dataset, parse_dates=["Date"], dayfirst=True)
         data_to_insert = []
         for _, row in self.df.iterrows():
             data_to_insert.append(
                 {
                     "id": uuid.uuid4(),
-                    "symbol": "GOOGL.US",
+                    "symbol": symbol,
                     "date": row["Date"].strftime("%Y-%m-%d"),
                     "open": row["Open"],
                     "high": row["High"],
@@ -148,4 +147,4 @@ class StockDataLoader:
                 raise
 
 
-StockDataLoader("backend/datasets/googl_us_d.csv")
+StockDataLoader("backend/datasets/googl_us_d.csv", "GOOGL.US")
