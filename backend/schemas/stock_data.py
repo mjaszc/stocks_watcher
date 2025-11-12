@@ -20,7 +20,7 @@ class StockCreate(StockBase):
     pass
 
 
-class StockResponse(StockBase):
+class StockResponse(BaseModel):
     symbol: str
     date: datetime
     close: Decimal

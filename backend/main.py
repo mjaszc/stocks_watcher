@@ -1,10 +1,18 @@
-from typing import Union
-
 from fastapi import FastAPI
+from fastapi.routing import APIRoute
+from backend.core.config import settings
+from backend.api.main import api_router
 
-app = FastAPI()
+
+def custom_generate_unique_id(route: APIRoute) -> str:
+    return f"{route.tags[0]}-{route.name}"
 
 
-@app.get("/")
-def read_root():
-    return {"Hello": "Test"}
+app = FastAPI(
+    title=settings.PROJECT_NAME,
+    openapi_url=f"{settings.API_V1_STR}/openapi.json",
+    generate_unique_id_function=custom_generate_unique_id,
+)
+
+
+app.include_router(api_router, prefix=settings.API_V1_STR)
