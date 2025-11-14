@@ -19,14 +19,14 @@ class StockDataLoader:
     base_price_20y = Decimal("0.00")
 
     def __init__(self, dataset: str, symbol: str):
-        self.df = pd.read_csv(dataset, parse_dates=["Date"], dayfirst=True)
+        self.df = pd.read_csv(dataset, parse_dates=["Date"], dayfirst=False)
         data_to_insert = []
         for _, row in self.df.iterrows():
             data_to_insert.append(
                 {
                     "id": uuid.uuid4(),
                     "symbol": symbol,
-                    "date": row["Date"].strftime("%Y-%m-%d"),
+                    "date": row["Date"],
                     "open": row["Open"],
                     "high": row["High"],
                     "low": row["Low"],
@@ -69,7 +69,7 @@ class StockDataLoader:
         return today_date - timeframe_map[timeframe]
 
     def get_base_prices(self) -> dict[str, Decimal]:
-        today_date = datetime(2025, 11, 5)
+        today_date = datetime(2025, 11, 13)
 
         timeframes = ["1m", "3m", "6m", "1y", "5y", "20y"]
 
@@ -108,7 +108,7 @@ class StockDataLoader:
         timeframe: str,
         base_price: Decimal,
         column_name: str,
-        today_date: datetime = datetime(2025, 11, 5),
+        today_date: datetime = datetime(2025, 11, 13),
     ) -> None:
         offset_map = {
             "1m": pd.DateOffset(months=1),
@@ -147,4 +147,8 @@ class StockDataLoader:
                 raise
 
 
-StockDataLoader("backend/datasets/googl_us_d.csv", "GOOGL.US")
+# TODO: Fix normalization price when loading all datasets at once
+# StockDataLoader("backend/datasets/googl_us_d.csv", "GOOGL.US")
+# StockDataLoader("backend/datasets/amzn_us_d.csv", "AMZN.US")
+# StockDataLoader("backend/datasets/aapl_us_d.csv", "AAPL.US")
+# StockDataLoader("backend/datasets/meta_us_d.csv", "META.US")

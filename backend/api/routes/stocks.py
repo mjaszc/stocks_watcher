@@ -1,5 +1,4 @@
 from fastapi import APIRouter, Depends, status, HTTPException, Query
-from typing import Optional
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 from datetime import datetime
@@ -96,7 +95,7 @@ def get_stock_prices_by_period(
             detail="At least one symbol must be provided",
         )
 
-    end_date = datetime(2025, 11, 5)
+    end_date = datetime(2025, 11, 13)
     delta = period_mapping[period]
     start_date = end_date - delta
 
@@ -107,7 +106,7 @@ def get_stock_prices_by_period(
             StockData.date >= start_date,
             StockData.date <= end_date,
         )
-        .order_by(StockData.symbol, StockData.date.desc())
+        .order_by(StockData.symbol, StockData.date)
     )
 
     stock_data = db.execute(stmt).scalars().all()
