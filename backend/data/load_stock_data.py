@@ -10,15 +10,16 @@ from backend.models.stock_data import StockData
 
 
 class StockDataLoader:
-    # Base prices for base100 normalized price calculation for all time horizons
-    base_price_1m = Decimal("0.00")
-    base_price_3m = Decimal("0.00")
-    base_price_6m = Decimal("0.00")
-    base_price_1y = Decimal("0.00")
-    base_price_5y = Decimal("0.00")
-    base_price_20y = Decimal("0.00")
-
     def __init__(self, dataset: str, symbol: str):
+        # Base prices for base100 normalized price calculation for all time horizons
+        self.base_price_1m = Decimal("0.00")
+        self.base_price_3m = Decimal("0.00")
+        self.base_price_6m = Decimal("0.00")
+        self.base_price_1y = Decimal("0.00")
+        self.base_price_5y = Decimal("0.00")
+        self.base_price_20y = Decimal("0.00")
+
+        self.symbol = symbol
         self.df = pd.read_csv(dataset, parse_dates=["Date"], dayfirst=False)
         data_to_insert = []
         for _, row in self.df.iterrows():
@@ -135,10 +136,14 @@ class StockDataLoader:
                             f"""
                             UPDATE stock_data
                             SET {column_name} = :normalized_price
-                            WHERE "date" = :date
+                            WHERE "date" = :date AND symbol = :symbol
                             """
                         ),
-                        {"normalized_price": normalized_price, "date": row["Date"]},
+                        {
+                            "normalized_price": normalized_price,
+                            "date": row["Date"],
+                            "symbol": self.symbol,
+                        },
                     )
                     db.commit()
             except Exception as e:
@@ -147,8 +152,7 @@ class StockDataLoader:
                 raise
 
 
-# TODO: Fix normalization price when loading all datasets at once
-# StockDataLoader("backend/datasets/googl_us_d.csv", "GOOGL.US")
-# StockDataLoader("backend/datasets/amzn_us_d.csv", "AMZN.US")
-# StockDataLoader("backend/datasets/aapl_us_d.csv", "AAPL.US")
-# StockDataLoader("backend/datasets/meta_us_d.csv", "META.US")
+StockDataLoader("backend/datasets/googl_us_d.csv", "GOOGL.US")
+StockDataLoader("backend/datasets/amzn_us_d.csv", "AMZN.US")
+StockDataLoader("backend/datasets/aapl_us_d.csv", "AAPL.US")
+StockDataLoader("backend/datasets/meta_us_d.csv", "META.US")
