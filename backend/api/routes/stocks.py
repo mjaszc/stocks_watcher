@@ -7,9 +7,9 @@ from dateutil.relativedelta import relativedelta
 from backend.models.stock_data import StockData
 from backend.db.session import get_db
 from backend.schemas.stock_data import (
-    Stock1MResponse,
-    Stock3MResponse,
-    Stock6MResponse,
+    Stock1MoResponse,
+    Stock3MoResponse,
+    Stock6MoResponse,
     Stock1YResponse,
     Stock5YResponse,
     Stock20YResponse,
@@ -22,7 +22,7 @@ router = APIRouter(prefix="/stocks", tags=["stocks"])
 def get_stocks_1m(
     symbols: str = Query(..., description="Comma-separated list of stock symbols"),
     db: Session = Depends(get_db),
-) -> dict[str, list[Stock1MResponse]]:
+) -> dict[str, list[Stock1MoResponse]]:
     return get_stock_prices_by_period("1mo", symbols, db)
 
 
@@ -30,7 +30,7 @@ def get_stocks_1m(
 def get_stocks_3m(
     symbols: str = Query(..., description="Comma-separated list of stock symbols"),
     db: Session = Depends(get_db),
-) -> dict[str, list[Stock3MResponse]]:
+) -> dict[str, list[Stock3MoResponse]]:
     return get_stock_prices_by_period("3mo", symbols, db)
 
 
@@ -38,7 +38,7 @@ def get_stocks_3m(
 def get_stocks_6m(
     symbols: str = Query(..., description="Comma-separated list of stock symbols"),
     db: Session = Depends(get_db),
-) -> dict[str, list[Stock6MResponse]]:
+) -> dict[str, list[Stock6MoResponse]]:
     return get_stock_prices_by_period("6mo", symbols, db)
 
 

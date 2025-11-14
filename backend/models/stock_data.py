@@ -33,9 +33,9 @@ class StockData(Base):
 
     # Normalized prices for different time horizons,
     # it will be calculated after loading historical data
-    norm_1m: Mapped[Decimal] = mapped_column(DECIMAL(12, 2), nullable=True)
-    norm_3m: Mapped[Decimal] = mapped_column(DECIMAL(12, 2), nullable=True)
-    norm_6m: Mapped[Decimal] = mapped_column(DECIMAL(12, 2), nullable=True)
+    norm_1mo: Mapped[Decimal] = mapped_column(DECIMAL(12, 2), nullable=True)
+    norm_3mo: Mapped[Decimal] = mapped_column(DECIMAL(12, 2), nullable=True)
+    norm_6mo: Mapped[Decimal] = mapped_column(DECIMAL(12, 2), nullable=True)
     norm_1y: Mapped[Decimal] = mapped_column(DECIMAL(12, 2), nullable=True)
     norm_5y: Mapped[Decimal] = mapped_column(DECIMAL(12, 2), nullable=True)
     norm_20y: Mapped[Decimal] = mapped_column(DECIMAL(12, 2), nullable=True)

@@ -24,30 +24,30 @@ class StockResponse(BaseModel):
     symbol: str
     date: datetime
     close: Decimal
-    norm_1m: Optional[Decimal] = None
-    norm_3m: Optional[Decimal] = None
-    norm_6m: Optional[Decimal] = None
+    norm_1mo: Optional[Decimal] = None
+    norm_3mo: Optional[Decimal] = None
+    norm_6mo: Optional[Decimal] = None
     norm_1y: Optional[Decimal] = None
     norm_5y: Optional[Decimal] = None
     norm_20y: Optional[Decimal] = None
 
 
-class Stock1MResponse(BaseModel):
+class Stock1MoResponse(BaseModel):
     symbol: str
     date: datetime
-    norm_1m: Optional[Decimal] = None
+    norm_1mo: Optional[Decimal] = None
 
 
-class Stock3MResponse(BaseModel):
+class Stock3MoResponse(BaseModel):
     symbol: str
     date: datetime
-    norm_3m: Optional[Decimal] = None
+    norm_3mo: Optional[Decimal] = None
 
 
-class Stock6MResponse(BaseModel):
+class Stock6MoResponse(BaseModel):
     symbol: str
     date: datetime
-    norm_6m: Optional[Decimal] = None
+    norm_6mo: Optional[Decimal] = None
 
 
 class Stock1YResponse(BaseModel):

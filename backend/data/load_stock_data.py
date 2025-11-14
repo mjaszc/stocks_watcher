@@ -12,9 +12,9 @@ from backend.models.stock_data import StockData
 class StockDataLoader:
     def __init__(self, dataset: str, symbol: str):
         # Base prices for base100 normalized price calculation for all time horizons
-        self.base_price_1m = Decimal("0.00")
-        self.base_price_3m = Decimal("0.00")
-        self.base_price_6m = Decimal("0.00")
+        self.base_price_1mo = Decimal("0.00")
+        self.base_price_3mo = Decimal("0.00")
+        self.base_price_6mo = Decimal("0.00")
         self.base_price_1y = Decimal("0.00")
         self.base_price_5y = Decimal("0.00")
         self.base_price_20y = Decimal("0.00")
@@ -45,18 +45,18 @@ class StockDataLoader:
         # Perform calculations for normalization prices
         extracted_base_prices = self.get_base_prices()
         self.update_prices(extracted_base_prices)
-        self.calculate_normalized_prices_for_tf("1m", self.base_price_1m, "norm_1m")
-        self.calculate_normalized_prices_for_tf("3m", self.base_price_3m, "norm_3m")
-        self.calculate_normalized_prices_for_tf("6m", self.base_price_6m, "norm_6m")
+        self.calculate_normalized_prices_for_tf("1mo", self.base_price_1mo, "norm_1mo")
+        self.calculate_normalized_prices_for_tf("3mo", self.base_price_3mo, "norm_3mo")
+        self.calculate_normalized_prices_for_tf("6mo", self.base_price_6mo, "norm_6mo")
         self.calculate_normalized_prices_for_tf("1y", self.base_price_1y, "norm_1y")
         self.calculate_normalized_prices_for_tf("5y", self.base_price_5y, "norm_5y")
         self.calculate_normalized_prices_for_tf("20y", self.base_price_20y, "norm_20y")
 
     def calculate_lookback_date(self, today_date: datetime, timeframe: str) -> datetime:
         timeframe_map = {
-            "1m": pd.DateOffset(months=1),
-            "3m": pd.DateOffset(months=3),
-            "6m": pd.DateOffset(months=6),
+            "1mo": pd.DateOffset(months=1),
+            "3mo": pd.DateOffset(months=3),
+            "6mo": pd.DateOffset(months=6),
             "1y": pd.DateOffset(years=1),
             "5y": pd.DateOffset(years=5),
             "20y": pd.DateOffset(years=20),
@@ -72,7 +72,7 @@ class StockDataLoader:
     def get_base_prices(self) -> dict[str, Decimal]:
         today_date = datetime(2025, 11, 13)
 
-        timeframes = ["1m", "3m", "6m", "1y", "5y", "20y"]
+        timeframes = ["1mo", "3mo", "6mo", "1y", "5y", "20y"]
 
         base_prices = {}
         for tf in timeframes:
@@ -91,7 +91,7 @@ class StockDataLoader:
 
     def update_prices(self, prices_dict: dict[str, Decimal]) -> None:
         for tf, close_price in prices_dict.items():
-            # Convert timeframe to attribute name (e.g., "1m" -> "base_price_1m")
+            # Convert timeframe to attribute name (e.g., "1mo" -> "base_price_1mo")
             attr_name = f"base_price_{tf}"
 
             # Set the attribute if it exists on this object
@@ -112,9 +112,9 @@ class StockDataLoader:
         today_date: datetime = datetime(2025, 11, 13),
     ) -> None:
         offset_map = {
-            "1m": pd.DateOffset(months=1),
-            "3m": pd.DateOffset(months=3),
-            "6m": pd.DateOffset(months=6),
+            "1mo": pd.DateOffset(months=1),
+            "3mo": pd.DateOffset(months=3),
+            "6mo": pd.DateOffset(months=6),
             "1y": pd.DateOffset(years=1),
             "5y": pd.DateOffset(years=5),
             "20y": pd.DateOffset(years=20),

@@ -6,7 +6,7 @@ import * as Plotly from "plotly.js-dist-min";
 interface StockData {
   symbol: string;
   date: string;
-  norm_20y: string;
+  norm_6mo: string;
 }
 
 interface ChartData {
@@ -19,7 +19,7 @@ function App() {
   useEffect(() => {
     axios
       .get<ChartData>(
-        "http://127.0.0.1:8000/api/v1/stocks/20y?symbols=googl.us"
+        "http://127.0.0.1:8000/api/v1/stocks/6mo?symbols=amzn.us,aapl.us,googl.us"
       )
       .then((response) => {
         setChartData(response.data);
@@ -36,7 +36,7 @@ function App() {
     const traces = Object.entries(chartData).map(([symbol, data]) => {
       return {
         x: data.map((item) => item.date),
-        y: data.map((item) => item.norm_20y),
+        y: data.map((item) => item.norm_6mo),
         type: "scatter" as const,
         mode: "lines" as const,
         name: symbol,
