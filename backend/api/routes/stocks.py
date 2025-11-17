@@ -13,6 +13,7 @@ from backend.schemas.stock_data import (
     Stock1YResponse,
     Stock5YResponse,
     Stock20YResponse,
+    StockSymbolsResponse,
 )
 
 router = APIRouter(prefix="/stocks", tags=["stocks"])
@@ -122,3 +123,11 @@ def get_stock_prices_by_period(
         result[symbol] = symbol_data
 
     return result
+
+
+@router.get("/symbols")
+def get_stock_symbols(db: Session = Depends(get_db)) -> list[str]:
+    stmt = select(StockData.symbol).distinct()
+    stock_data = db.execute(stmt).scalars().all()
+
+    return list(stock_data)

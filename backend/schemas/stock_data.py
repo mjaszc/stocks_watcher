@@ -66,3 +66,7 @@ class Stock20YResponse(BaseModel):
     symbol: str
     date: datetime
     norm_20y: Optional[Decimal] = None
+
+
+class StockSymbolsResponse(BaseModel):
+    symbols: list[str]
