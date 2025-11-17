@@ -1,8 +1,13 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import "./App.css";
-import * as Plotly from "plotly.js-dist-min";
+import Plotly from "plotly.js-dist-min";
 import { SelectButton } from "primereact/selectbutton";
+import { MultiSelect } from "primereact/multiselect";
+
+import "primereact/resources/themes/lara-dark-teal/theme.css";
+import "primereact/resources/primereact.min.css";
+import "primeicons/primeicons.css";
 
 interface StockData {
   symbol: string;
@@ -31,9 +36,13 @@ const timeframeToNormField: Record<string, keyof StockData> = {
 
 function App() {
   const [timeframe, setTimeframe] = useState("6mo");
-  const [stocks, setStocks] = useState(["amzn.us", "aapl.us", "googl.us"]);
+  // State for currently selected stocks
+  const [stocks, setStocks] = useState(["AMZN.US", "AAPL.US", "GOOGL.US"]);
+  // State for stock options for multiselect
+  const [stockOptions, setStockOptions] = useState([]);
   const [chartData, setChartData] = useState<ChartData>({});
 
+  // For filtering timeframe inside api endpoint
   const timeHorizons = [
     { label: "1 Months", value: "1mo" },
     { label: "3 Months", value: "3mo" },
@@ -43,6 +52,26 @@ function App() {
     { label: "20 Years", value: "20y" },
   ];
 
+  const stockSelectOptions = stockOptions.map((symbol) => ({
+    label: symbol,
+    value: symbol,
+  }));
+
+  // Retrieving stock symbols from database
+  useEffect(() => {
+    const url = "http://127.0.0.1:8000/api/v1/stocks/symbols";
+
+    axios
+      .get(url)
+      .then((response) => {
+        setStockOptions(response.data);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  }, []);
+
+  // Calling URL for chart generation
   useEffect(() => {
     const baseUrl = "http://127.0.0.1:8000/api/v1/stocks";
     const stocksParam = stocks.join(",");
@@ -58,6 +87,7 @@ function App() {
       });
   }, [timeframe, stocks]);
 
+  // Generating chart
   useEffect(() => {
     if (Object.keys(chartData).length == 0) return;
 
@@ -81,20 +111,55 @@ function App() {
           text: "Date",
         },
         type: "date" as const,
+        gridcolor: "rgba(255, 255, 255, 0.1)",
+        color: "rgba(255, 255, 255, 0.87)",
       },
       yaxis: {
         title: {
           text: "Normalized Value",
         },
+        gridcolor: "rgba(255, 255, 255, 0.1)",
+        color: "rgba(255, 255, 255, 0.87)",
       },
       hovermode: "closest" as const,
+      paper_bgcolor: "#1f2937",
+      plot_bgcolor: "#1f2937",
+      font: {
+        color: "rgba(255, 255, 255, 0.87)",
+        family:
+          'Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+      },
     };
 
-    Plotly.newPlot("chart", traces, layout);
+    const config = {
+      displayModeBar: false,
+      displaylogo: false,
+      responsive: true,
+    };
+
+    Plotly.newPlot("chart", traces, layout, config);
   }, [chartData, timeframe]);
 
   return (
     <>
+      <MultiSelect
+        value={stocks}
+        onChange={(e) => {
+          if (e.value.length > 0) {
+            setStocks(e.value);
+          }
+        }}
+        options={stockSelectOptions}
+        optionLabel="label"
+        optionValue="value"
+        display="chip"
+        placeholder="Select Stocks"
+        maxSelectedLabels={5}
+        className="w-full md:w-20rem"
+        panelStyle={{ maxHeight: "300px" }}
+        filter
+      />
+
       <SelectButton
         value={timeframe}
         onChange={(e) => setTimeframe(e.value)}
