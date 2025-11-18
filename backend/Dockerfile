@@ -25,4 +25,4 @@ COPY / /backend
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync
 
-CMD ["fastapi", "run", "main.py", "--port", "80"]
+CMD ["fastapi", "run", "main.py", "--port", "8000"]
