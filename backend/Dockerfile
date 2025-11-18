@@ -25,4 +25,6 @@ COPY / /backend
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync
 
-CMD ["fastapi", "run", "main.py", "--port", "8000"]
+RUN chmod +x entrypoint.sh
+
+ENTRYPOINT ["/backend/entrypoint.sh"]

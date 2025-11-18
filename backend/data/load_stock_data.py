@@ -2,11 +2,11 @@ import pandas as pd
 import uuid
 from decimal import Decimal
 from datetime import datetime
-from backend.db.engine import engine
-from backend.db.session import Session
+from db.engine import engine
+from db.session import Session
 from sqlalchemy import text
 from sqlalchemy.dialects.postgresql import insert
-from backend.models.stock_data import StockData
+from models.stock_data import StockData
 
 
 class StockDataLoader:
@@ -152,7 +152,7 @@ class StockDataLoader:
                 raise
 
 
-StockDataLoader("backend/datasets/googl_us_d.csv", "GOOGL.US")
-StockDataLoader("backend/datasets/amzn_us_d.csv", "AMZN.US")
-StockDataLoader("backend/datasets/aapl_us_d.csv", "AAPL.US")
-StockDataLoader("backend/datasets/meta_us_d.csv", "META.US")
+StockDataLoader("datasets/googl_us_d.csv", "GOOGL.US")
+StockDataLoader("datasets/amzn_us_d.csv", "AMZN.US")
+StockDataLoader("datasets/aapl_us_d.csv", "AAPL.US")
+StockDataLoader("datasets/meta_us_d.csv", "META.US")

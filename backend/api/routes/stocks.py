@@ -4,9 +4,9 @@ from sqlalchemy.orm import Session
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 
-from backend.models.stock_data import StockData
-from backend.db.session import get_db
-from backend.schemas.stock_data import (
+from models.stock_data import StockData
+from db.session import get_db
+from schemas.stock_data import (
     Stock1MoResponse,
     Stock3MoResponse,
     Stock6MoResponse,
