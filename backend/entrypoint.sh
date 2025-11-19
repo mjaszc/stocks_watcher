@@ -6,4 +6,4 @@ alembic upgrade head
 
 uv run -m data.load_stock_data
 
-fastapi run main.py --port 8000
+uv run -m uvicorn main:app --port 8000

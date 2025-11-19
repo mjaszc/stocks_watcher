@@ -3,9 +3,10 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
+from sqlalchemy import func
 
 from models.stock_data import StockData
-from db.session import get_db
+from db.session import get_db, Session as s
 from schemas.stock_data import (
     Stock1MoResponse,
     Stock3MoResponse,
@@ -13,10 +14,17 @@ from schemas.stock_data import (
     Stock1YResponse,
     Stock5YResponse,
     Stock20YResponse,
-    StockSymbolsResponse,
 )
 
 router = APIRouter(prefix="/stocks", tags=["stocks"])
+
+
+def get_max_date():
+    with s() as db:
+        result = db.query(func.max(StockData.date)).scalar()
+        if result is None:
+            print("Could not get the max date")
+        return result
 
 
 @router.get("/1mo")
@@ -96,7 +104,7 @@ def get_stock_prices_by_period(
             detail="At least one symbol must be provided",
         )
 
-    end_date = datetime(2025, 11, 13)
+    end_date = get_max_date()
     delta = period_mapping[period]
     start_date = end_date - delta
 

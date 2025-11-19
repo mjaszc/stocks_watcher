@@ -10,7 +10,7 @@ from models.stock_data import StockData
 
 
 class StockDataLoader:
-    def __init__(self, dataset: str, symbol: str):
+    def __init__(self, dataset: str, symbol: str, max_date: datetime):
         # Base prices for base100 normalized price calculation for all time horizons
         self.base_price_1mo = Decimal("0.00")
         self.base_price_3mo = Decimal("0.00")
@@ -18,6 +18,9 @@ class StockDataLoader:
         self.base_price_1y = Decimal("0.00")
         self.base_price_5y = Decimal("0.00")
         self.base_price_20y = Decimal("0.00")
+
+        # Get max date for correct calculation of normalized prices
+        self.max_date = max_date
 
         self.symbol = symbol
         self.df = pd.read_csv(dataset, parse_dates=["Date"], dayfirst=False)
@@ -70,13 +73,14 @@ class StockDataLoader:
         return today_date - timeframe_map[timeframe]
 
     def get_base_prices(self) -> dict[str, Decimal]:
-        today_date = datetime(2025, 11, 13)
-
+        """Get base prices for calculating normalized price for each stock."""
         timeframes = ["1mo", "3mo", "6mo", "1y", "5y", "20y"]
 
         base_prices = {}
         for tf in timeframes:
-            target_date = pd.to_datetime(self.calculate_lookback_date(today_date, tf))
+            target_date = pd.to_datetime(
+                self.calculate_lookback_date(self.max_date, tf)
+            )
             df_dates = pd.to_datetime(self.df["Date"])
 
             # Find nearest date
@@ -90,6 +94,7 @@ class StockDataLoader:
         return base_prices
 
     def update_prices(self, prices_dict: dict[str, Decimal]) -> None:
+        """Pass updated base prices dictionary to update Class base prices"""
         for tf, close_price in prices_dict.items():
             # Convert timeframe to attribute name (e.g., "1mo" -> "base_price_1mo")
             attr_name = f"base_price_{tf}"
@@ -109,7 +114,6 @@ class StockDataLoader:
         timeframe: str,
         base_price: Decimal,
         column_name: str,
-        today_date: datetime = datetime(2025, 11, 13),
     ) -> None:
         offset_map = {
             "1mo": pd.DateOffset(months=1),
@@ -121,7 +125,7 @@ class StockDataLoader:
         }
 
         self.df["Date"] = pd.to_datetime(self.df["Date"])
-        cutoff_date = pd.Timestamp(today_date) - offset_map[timeframe]
+        cutoff_date = pd.Timestamp(self.max_date) - offset_map[timeframe]
         recent_dates = self.df[self.df["Date"] >= cutoff_date]
 
         with Session() as db:
@@ -145,14 +149,8 @@ class StockDataLoader:
                             "symbol": self.symbol,
                         },
                     )
-                    db.commit()
+                db.commit()
             except Exception as e:
                 print(f"Error updating database: {e}")
                 db.rollback()
                 raise
-
-
-StockDataLoader("datasets/googl_us_d.csv", "GOOGL.US")
-StockDataLoader("datasets/amzn_us_d.csv", "AMZN.US")
-StockDataLoader("datasets/aapl_us_d.csv", "AAPL.US")
-StockDataLoader("datasets/meta_us_d.csv", "META.US")
