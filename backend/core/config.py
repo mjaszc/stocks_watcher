@@ -33,6 +33,8 @@ class Settings(BaseSettings):
             self.FRONTEND_HOST
         ]
 
+    RABBITMQ_BROKER_URL: str
+
     POSTGRES_SERVER: str
     POSTGRES_PORT: int = 5432
     POSTGRES_USER: str

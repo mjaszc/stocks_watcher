@@ -4,13 +4,17 @@ from decimal import Decimal
 from datetime import datetime
 from db.engine import engine
 from db.session import Session
-from sqlalchemy import text
+from sqlalchemy import text, func
 from sqlalchemy.dialects.postgresql import insert
 from models.stock_data import StockData
 
 
 class StockDataLoader:
-    def __init__(self, dataset: str, symbol: str, max_date: datetime):
+    def __init__(
+        self,
+        dataset: str,
+        symbol: str,
+    ):
         # Base prices for base100 normalized price calculation for all time horizons
         self.base_price_1mo = Decimal("0.00")
         self.base_price_3mo = Decimal("0.00")
@@ -18,9 +22,6 @@ class StockDataLoader:
         self.base_price_1y = Decimal("0.00")
         self.base_price_5y = Decimal("0.00")
         self.base_price_20y = Decimal("0.00")
-
-        # Get max date for correct calculation of normalized prices
-        self.max_date = max_date
 
         self.symbol = symbol
         self.df = pd.read_csv(dataset, parse_dates=["Date"], dayfirst=False)
@@ -45,15 +46,46 @@ class StockDataLoader:
             stmt = stmt.on_conflict_do_nothing(constraint="uq_symbol_date")
             conn.execute(stmt)
 
+        # Clear normalized prices data from previous day for easier updates
+        self.clear_norm_rows(symbol.upper())
+        self.max_date = self.get_max_date(symbol.upper())
+
         # Perform calculations for normalization prices
         extracted_base_prices = self.get_base_prices()
         self.update_prices(extracted_base_prices)
+
         self.calculate_normalized_prices_for_tf("1mo", self.base_price_1mo, "norm_1mo")
         self.calculate_normalized_prices_for_tf("3mo", self.base_price_3mo, "norm_3mo")
         self.calculate_normalized_prices_for_tf("6mo", self.base_price_6mo, "norm_6mo")
         self.calculate_normalized_prices_for_tf("1y", self.base_price_1y, "norm_1y")
         self.calculate_normalized_prices_for_tf("5y", self.base_price_5y, "norm_5y")
         self.calculate_normalized_prices_for_tf("20y", self.base_price_20y, "norm_20y")
+
+    def clear_norm_rows(self, symbol: str):
+        with Session() as db:
+            db.query(StockData).filter(StockData.symbol == symbol).update(
+                {
+                    StockData.norm_1mo: None,
+                    StockData.norm_3mo: None,
+                    StockData.norm_6mo: None,
+                    StockData.norm_1y: None,
+                    StockData.norm_5y: None,
+                    StockData.norm_20y: None,
+                },
+                synchronize_session=False,
+            )
+            db.commit()
+
+    def get_max_date(self, symbol: str):
+        with Session() as db:
+            result = (
+                db.query(func.max(StockData.date))
+                .filter(StockData.symbol == symbol)
+                .scalar()
+            )
+            if result is None:
+                print("Could not get the max date, no data in database")
+            return result
 
     def calculate_lookback_date(self, today_date: datetime, timeframe: str) -> datetime:
         timeframe_map = {

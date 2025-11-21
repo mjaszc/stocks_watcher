@@ -3,6 +3,7 @@ name = "stock_watcher"
 version = "1.0"
 dependencies = [
     "alembic>=1.17.1",
+    "celery>=5.5.3",
     "fastapi[standard]>=0.121.0",
     "pandas>=2.3.3",
     "psycopg2-binary>=2.9.11",

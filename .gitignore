@@ -218,3 +218,6 @@ __marimo__/
 # Datasets for historical data
 datasets/
 .vscode/
+
+# Celery local db schedule
+backend/celerybeat-schedule.db
