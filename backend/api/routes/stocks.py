@@ -1,7 +1,6 @@
 from fastapi import APIRouter, Depends, status, HTTPException, Query
 from sqlalchemy import select
 from sqlalchemy.orm import Session
-from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from sqlalchemy import func
 

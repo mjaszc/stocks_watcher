@@ -9,8 +9,14 @@ dependencies = [
     "psycopg2-binary>=2.9.11",
     "pydantic>=2.12.4",
     "pydantic-settings>=2.11.0",
+    "pytest>=9.0.1",
+    "pytest-mock>=3.15.1",
     "requests>=2.32.5",
     "rignore>=0.7.5",
     "sqlalchemy>=2.0.44",
 ]
 requires-python = ">= 3.12"
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
