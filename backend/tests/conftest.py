@@ -3,7 +3,10 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 from models.stock_data import StockData
 from core.config import settings
+from data.load_stock_data import StockDataLoader
 
+import pandas as pd
+import tempfile
 from datetime import date
 from decimal import Decimal
 
@@ -91,3 +94,39 @@ def sample_stock_data():
             volume=1500000,
         ),
     ]
+
+
+@pytest.fixture
+def sample_csv_data():
+    """Generate sample csv data in 20 years range for full testing"""
+    dates = pd.date_range(start="2005-01-01", end="2025-01-01")
+    data = {
+        "Date": dates,
+        "Open": [100 + i * 0.05 for i in range(len(dates))],
+        "High": [101 + i * 0.05 for i in range(len(dates))],
+        "Low": [99 + i * 0.05 for i in range(len(dates))],
+        "Close": [100.5 + i * 0.05 for i in range(len(dates))],
+        "Volume": [1000000 + i * 100 for i in range(len(dates))],
+    }
+    return pd.DataFrame(data)
+
+
+@pytest.fixture
+def csv_temp_file(sample_csv_data):
+    """Create temporary file with generated csv data"""
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".csv", delete=False) as f:
+        sample_csv_data.to_csv(f.name, index=False)
+        yield f.name
+
+    # cleanup
+    f.close()
+
+
+@pytest.fixture
+def populated_db(db_session, csv_temp_file):
+    """Feed temporary data to the testing database"""
+    loader = StockDataLoader(dataset=csv_temp_file, symbol="AAPL.US")
+    yield loader
+
+    db_session.session.query(StockData).filter(StockData.symbol == "AAPL.US").delete()
+    db_session.commit()

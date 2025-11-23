@@ -10,11 +10,10 @@ from models.stock_data import StockData
 
 
 class StockDataLoader:
-    def __init__(
-        self,
-        dataset: str,
-        symbol: str,
-    ):
+    def __init__(self, dataset: str, symbol: str, session=None):
+        # Needed for testing on test db session
+        self.session = session
+
         # Base prices for base100 normalized price calculation for all time horizons
         self.base_price_1mo = Decimal("0.00")
         self.base_price_3mo = Decimal("0.00")
@@ -41,10 +40,25 @@ class StockDataLoader:
             )
 
         # Put historical stock data read from csv file
-        with engine.begin() as conn:
+        if self.session:
+            # Use provided session (for testing or dependency injection)
             stmt = insert(StockData).values(data_to_insert)
             stmt = stmt.on_conflict_do_nothing(constraint="uq_symbol_date")
-            conn.execute(stmt)
+            self.session.execute(stmt)
+            self.session.commit()
+        else:
+            # Create and use a new session for production
+            db = Session()
+            try:
+                stmt = insert(StockData).values(data_to_insert)
+                stmt = stmt.on_conflict_do_nothing(constraint="uq_symbol_date")
+                db.execute(stmt)
+                db.commit()
+            except Exception as e:
+                db.rollback()
+                raise
+            finally:
+                db.close()
 
         # Clear normalized prices data from previous day for easier updates
         self.clear_norm_rows(symbol.upper())
@@ -62,7 +76,12 @@ class StockDataLoader:
         self.calculate_normalized_prices_for_tf("20y", self.base_price_20y, "norm_20y")
 
     def clear_norm_rows(self, symbol: str):
-        with Session() as db:
+        if self.session:
+            db = self.session
+        else:
+            db = Session()
+
+        try:
             db.query(StockData).filter(StockData.symbol == symbol).update(
                 {
                     StockData.norm_1mo: None,
@@ -75,9 +94,17 @@ class StockDataLoader:
                 synchronize_session=False,
             )
             db.commit()
+        finally:
+            if not self.session:
+                db.close()
 
     def get_max_date(self, symbol: str):
-        with Session() as db:
+        if self.session:
+            db = self.session
+        else:
+            db = Session()
+
+        try:
             result = (
                 db.query(func.max(StockData.date))
                 .filter(StockData.symbol == symbol)
@@ -86,6 +113,9 @@ class StockDataLoader:
             if result is None:
                 print("Could not get the max date, no data in database")
             return result
+        finally:
+            if not self.session:
+                db.close()
 
     def calculate_lookback_date(self, today_date: datetime, timeframe: str) -> datetime:
         timeframe_map = {
@@ -160,29 +190,36 @@ class StockDataLoader:
         cutoff_date = pd.Timestamp(self.max_date) - offset_map[timeframe]
         recent_dates = self.df[self.df["Date"] >= cutoff_date]
 
-        with Session() as db:
-            try:
-                for _, row in recent_dates.iterrows():
-                    close_price = Decimal(str(row["Close"]))
-                    normalized_price: Decimal = self.calculate_normalized_price(
-                        base_price, close_price
-                    )
-                    db.execute(
-                        text(
-                            f"""
-                            UPDATE stock_data
-                            SET {column_name} = :normalized_price
-                            WHERE "date" = :date AND symbol = :symbol
-                            """
-                        ),
-                        {
-                            "normalized_price": normalized_price,
-                            "date": row["Date"],
-                            "symbol": self.symbol,
-                        },
-                    )
-                db.commit()
-            except Exception as e:
-                print(f"Error updating database: {e}")
-                db.rollback()
-                raise
+        if self.session:
+            db = self.session
+        else:
+            db = Session()
+
+        try:
+            for _, row in recent_dates.iterrows():
+                close_price = Decimal(str(row["Close"]))
+                normalized_price: Decimal = self.calculate_normalized_price(
+                    base_price, close_price
+                )
+                db.execute(
+                    text(
+                        f"""
+                        UPDATE stock_data
+                        SET {column_name} = :normalized_price
+                        WHERE "date" = :date AND symbol = :symbol
+                        """
+                    ),
+                    {
+                        "normalized_price": normalized_price,
+                        "date": row["Date"],
+                        "symbol": self.symbol,
+                    },
+                )
+            db.commit()
+        except Exception as e:
+            print(f"Error updating database: {e}")
+            db.rollback()
+            raise
+        finally:
+            if not self.session:
+                db.close()
