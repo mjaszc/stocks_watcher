@@ -19,18 +19,15 @@ def test_db_engine():
 
     # Check if db exists
     with engine.connect() as conn:
-        result = conn.execute(
-            text("SELECT 1 FROM pg_database WHERE datname = :db_name"),
-            {"db_name": test_db_name},
+        conn.execute(text(f"CREATE DATABASE {test_db_name}"))
+        conn.execute(
+            text(f"GRANT ALL PRIVILEGES ON DATABASE {test_db_name} TO postgres")
         )
-        db_exists = result.fetchone() is not None
-
-        # If not, create a new one
-        if not db_exists:
-            conn.execute(text(f"CREATE DATABASE {test_db_name}"))
 
     # Connect to test db
-    test_engine = create_engine(str(settings.TEST_SQLALCHEMY_DATABASE_URI))
+    test_engine = create_engine(
+        f"postgresql+psycopg2://postgres:postgres@localhost:5432/{test_db_name}"
+    )
     StockData.metadata.create_all(test_engine)
 
     yield test_engine
@@ -38,7 +35,7 @@ def test_db_engine():
     test_engine.dispose()
 
     with engine.connect() as conn:
-        # Terminate all connections to test db
+        # Terminate all connections to test db and delete db
         conn.execute(
             text(
                 f"""
@@ -56,13 +53,20 @@ def test_db_engine():
 
 @pytest.fixture
 def db_session(test_db_engine):
-    Session = sessionmaker(bind=test_db_engine)
+    connection = test_db_engine.connect()
+    transaction = connection.begin()
+
+    Session = sessionmaker(bind=connection)
     session = Session()
 
     yield session
 
-    session.rollback()
     session.close()
+
+    if transaction.is_active:
+        transaction.rollback()
+
+    connection.close()
 
 
 @pytest.fixture
@@ -78,8 +82,8 @@ def sample_stock_data():
             volume=1000000,
         ),
         StockData(
-            symbol="META.US",
-            date=date(2025, 11, 22),
+            symbol="AAPL.US",
+            date=date(2025, 11, 23),
             open=Decimal("154.00"),
             high=Decimal("156.00"),
             low=Decimal("153.00"),
