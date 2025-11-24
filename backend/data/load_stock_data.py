@@ -2,7 +2,6 @@ import pandas as pd
 import uuid
 from decimal import Decimal
 from datetime import datetime
-from db.engine import engine
 from db.session import Session
 from sqlalchemy import text, func
 from sqlalchemy.dialects.postgresql import insert

@@ -123,10 +123,8 @@ def csv_temp_file(sample_csv_data):
 
 
 @pytest.fixture
-def populated_db(db_session, csv_temp_file):
-    """Feed temporary data to the testing database"""
-    loader = StockDataLoader(dataset=csv_temp_file, symbol="AAPL.US")
-    yield loader
-
-    db_session.session.query(StockData).filter(StockData.symbol == "AAPL.US").delete()
-    db_session.commit()
+def sample_stock_loader_class(csv_temp_file, db_session):
+    loader = StockDataLoader(
+        dataset=csv_temp_file, symbol="TEST.US", session=db_session
+    )
+    return loader
