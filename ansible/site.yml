@@ -1,0 +1,11 @@
+- name: Setup firewall using UFW
+  hosts: all
+  become: true
+  roles:
+    - ufw
+
+- name: Nginx reverse proxy
+  hosts: all
+  become: true
+  roles:
+    - nginx
