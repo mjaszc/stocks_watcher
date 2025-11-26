@@ -5,7 +5,7 @@ import requests
 from .load_stock_data import StockDataLoader
 from core.config import settings
 
-app = Celery(broker=settings.RABBITMQ_BROKER_URL)
+app = Celery(broker=settings.CELERY_BROKER_URL)
 app.conf.enable_utc = True
 app.conf.timezone = "UTC"  # type: ignore
 

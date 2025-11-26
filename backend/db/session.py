@@ -1,4 +1,4 @@
-from sqlalchemy.orm import sessionmaker, scoped_session
+from sqlalchemy.orm import sessionmaker
 from db.engine import engine
 
 Session = sessionmaker(bind=engine, expire_on_commit=False)
