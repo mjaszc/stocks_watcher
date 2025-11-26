@@ -20,7 +20,7 @@ RUN --mount=type=cache,target=/root/.cache/uv \
 
 ENV PYTHONPATH=/backend
 
-COPY / /backend
+COPY . /backend 
 
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync
