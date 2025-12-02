@@ -221,3 +221,13 @@ datasets/
 
 # Celery local db schedule
 backend/celerybeat-schedule.db
+
+# Nginx certbot directory
+nginx/certbot/*
+
+data/access/*
+data/custom_ssl/*
+data/letsencrypt-acme-challenge/*
+
+data/database.sqlite
+data/keys.json
