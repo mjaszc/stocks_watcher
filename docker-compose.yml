@@ -122,17 +122,29 @@ services:
       - app-network
 
   nginx:
-    image: nginx:1
+    image: nginx:latest
     restart: always
     volumes:
-      - frontend-dist:/usr/share/nginx/html:ro
-      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx/secure/:/etc/nginx/templates/
+      - /etc/localtime:/etc/localtime:ro
+      - ./nginx/certbot/conf:/etc/letsencrypt
+      - ./nginx/certbot/www:/var/www/certbot
+      - ./nginx/99-autoreload.sh:/docker-entrypoint.d/99-autoreload.sh  # Script to autoreload Nginx when certs are renewed
     ports:
       - "80:80"
+      - "443:443"
     depends_on:
       - frontend
+      - backend
     networks:
       - app-network
+  
+  certbot:
+    image: certbot/certbot
+    volumes:
+      - ./nginx/certbot/conf:/etc/letsencrypt
+      - ./nginx/certbot/www:/var/www/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"  # Renew certificates every 12 hours
 
 networks:
   app-network:
