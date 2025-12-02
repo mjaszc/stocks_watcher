@@ -1,11 +1,5 @@
-- name: Setup firewall using UFW
-  hosts: all
-  become: true
-  roles:
-    - ufw
-
-- name: Nginx reverse proxy
-  hosts: all
-  become: true
-  roles:
-    - nginx
+- hosts: all
+  tasks:
+    - name: UFW
+      include_role:
+        name: ufw

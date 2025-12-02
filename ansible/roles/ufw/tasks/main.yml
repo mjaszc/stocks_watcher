@@ -12,12 +12,6 @@
     name: OpenSSH
   become: true
 
-- name: Enable Nginx UFW
-  community.general.ufw:
-    rule: allow
-    name: "Nginx Full"
-  become: true
-
 - name: Allow HTTP connections
   community.general.ufw:
     rule: allow
