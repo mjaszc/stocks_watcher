@@ -59,7 +59,7 @@ function App() {
 
   // Retrieving stock symbols from database
   useEffect(() => {
-    const url = "http://localhost:8000/api/v1/stocks/symbols";
+    const url = "/api/v1/stocks/symbols";
 
     axios
       .get(url)
@@ -73,7 +73,7 @@ function App() {
 
   // Calling URL for chart generation
   useEffect(() => {
-    const baseUrl = "http://localhost:8000/api/v1/stocks";
+    const baseUrl = "/api/v1/stocks";
     const stocksParam = stocks.join(",");
     const url = `${baseUrl}/${timeframe}?symbols=${stocksParam}`;
 
