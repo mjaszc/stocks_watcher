@@ -23,6 +23,8 @@ services:
   backend:
     image: "${DOCKER_IMAGE_BACKEND}:${TAG-latest}"
     restart: always
+    ports:
+    - "8000:8000"
     depends_on:
       db:
         condition: service_healthy
@@ -116,35 +118,31 @@ services:
     image: "${DOCKER_IMAGE_FRONTEND}:${TAG-latest}"
     build:
       context: ./frontend
+    ports:
+      - "3000:3000"
     volumes:
       - frontend-dist:/app/dist
     networks:
       - app-network
 
   nginx:
-    image: nginx:latest
-    restart: always
-    volumes:
-      - ./nginx/secure/:/etc/nginx/templates/
-      - /etc/localtime:/etc/localtime:ro
-      - ./nginx/certbot/conf:/etc/letsencrypt
-      - ./nginx/certbot/www:/var/www/certbot
-      - ./nginx/99-autoreload.sh:/docker-entrypoint.d/99-autoreload.sh  # Script to autoreload Nginx when certs are renewed
+    build:
+      context: ./frontend
+      target: production
     ports:
       - "80:80"
-      - "443:443"
     depends_on:
-      - frontend
       - backend
+      - db
     networks:
       - app-network
   
-  certbot:
-    image: certbot/certbot
-    volumes:
-      - ./nginx/certbot/conf:/etc/letsencrypt
-      - ./nginx/certbot/www:/var/www/certbot
-    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"  # Renew certificates every 12 hours
+  # certbot:
+  #   image: certbot/certbot
+  #   volumes:
+  #     - ./nginx/certbot/conf:/etc/letsencrypt
+  #     - ./nginx/certbot/www:/var/www/certbot
+  #   entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"  # Renew certificates every 12 hours
 
 networks:
   app-network:
