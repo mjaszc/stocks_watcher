@@ -1,0 +1,8 @@
+- name: "Pull Docker Image: {{ item.name }}"
+  community.docker.docker_image:
+    name: "{{ item.name }}"
+    source: pull
+    pull:
+      platform: amd64
+  loop: "{{ container_images }}"
+  become: true

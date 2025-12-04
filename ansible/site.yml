@@ -1,5 +1,16 @@
-- hosts: all
+- name: UFW 
+  hosts: all
   tasks:
-    - name: UFW
+    - name: UFW config
       include_role:
         name: ufw
+
+- name: Docker
+  hosts: all
+  tasks:
+    - name: Configure Docker
+      include_role:
+        name: docker
+    - name: Pull containers
+      include_role:
+        name: container
