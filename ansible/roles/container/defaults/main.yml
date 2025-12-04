@@ -1,0 +1,12 @@
+container_command:
+container_env: {}
+container_host_group:
+container_ports: []
+container_volumes: []
+container_workdir:
+
+container_images:
+  - name: "postgres:17"
+  - name: "rabbitmq:4.2"
+  - name: "jasmar2/react-app:latest"
+  - name: "jasmar2/fastapi-app:latest"
