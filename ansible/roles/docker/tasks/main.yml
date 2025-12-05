@@ -60,17 +60,3 @@
     src: "../../../.env"
     dest: "/home/ubuntu/{{ directory_name }}/.env"
     mode: '0644'
-
-- name: Ensure UFW allows port 8000/tcp (if UFW installed)
-  ansible.builtin.ufw:
-     rule: allow
-     port: '8000'
-     proto: tcp
-  when: ansible_facts.packages.ufw is defined
-
-- name: Start the compose stack (create & start)
-  community.docker.docker_compose_v2:
-    project_src: "/home/ubuntu/{{ directory_name }}"
-    state: present
-    build: "never"
-  register: compose_result

@@ -8,6 +8,10 @@ RUN npm run build
 
 # Stage 2: Production with Nginx
 FROM nginx:latest AS production
+
+RUN apt-get update && apt-get install -y gettext-base
+
 COPY --from=builder /app/dist /usr/share/nginx/html
 COPY ./nginx.conf /etc/nginx/conf.d/default.conf
-CMD ["nginx", "-g", "daemon off;"]
+
+RUN chmod +x entrypoint.sh
