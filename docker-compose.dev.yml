@@ -111,6 +111,8 @@ services:
       - db
     networks:
       - app-network
+    environment:
+       - NGINX_SERVER_NAME=${NGINX_SERVER_NAME}
   
   # certbot:
   #   image: certbot/certbot

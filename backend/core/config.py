@@ -2,6 +2,7 @@ from pydantic import PostgresDsn, computed_field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing import Annotated, Any, Literal
 from pydantic import AnyUrl, BeforeValidator
+import os
 
 
 def parse_cors(v: Any) -> list[str] | str:
@@ -13,8 +14,10 @@ def parse_cors(v: Any) -> list[str] | str:
 
 
 class Settings(BaseSettings):
+    ENVIRONMENT: Literal["local", "production"] = "production"
+
     model_config = SettingsConfigDict(
-        env_file="../.env",
+        env_file=f"../.env.{os.getenv('ENVIRONMENT', 'local')}",
         env_ignore_empty=True,
         extra="ignore",
     )
@@ -22,8 +25,6 @@ class Settings(BaseSettings):
     PROJECT_NAME: str = "Stock_watcher"
     API_V1_STR: str = "/api/v1"
     FRONTEND_HOST: str = "http://localhost:5173"
-
-    ENVIRONMENT: Literal["local", "staging", "production"] = "local"
 
     BACKEND_CORS_ORIGINS: Annotated[list[AnyUrl] | str, BeforeValidator(parse_cors)] = (
         []
