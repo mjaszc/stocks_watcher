@@ -1,4 +1,3 @@
-
 - name: Install ufw
   ansible.builtin.apt:
     name: ufw
@@ -6,7 +5,12 @@
     update_cache: yes
   become: true
 
-- name: Allow SSH connections
+- name: UFW - Set default policy to deny
+  community.general.ufw:
+    default: deny
+  become: true
+
+- name: Allow SSH connections (Critical to prevent lockout)
   community.general.ufw:
     rule: allow
     name: OpenSSH
@@ -33,12 +37,12 @@
     proto: tcp
   become: true
 
-- name: UFW - Enable and deny by default
+- name: UFW - Enable the firewall service
   community.general.ufw:
     state: enabled
-    default: deny
   become: true
 
 - name: UFW - Reload firewall
   ansible.builtin.command: ufw reload
+  changed_when: true
   become: true

@@ -1,5 +1,5 @@
 x-app-base: &app-base
-  image: "${DOCKER_IMAGE_BACKEND_PROD}:${TAG-latest}"
+  image: "${DOCKER_IMAGE_BACKEND}:${TAG-latest}"
   env_file:
     - .env
   networks:
@@ -55,7 +55,6 @@ services:
   rabbitmq:
     image: rabbitmq:4.2
     hostname: "rabbitmq"
-    restart: always
     ports:
       - 5672:5672
       - 15672:15672
@@ -67,7 +66,6 @@ services:
       - RABBITMQ_DEFAULT_USER=${RABBITMQ_USER}
       - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASS}
       - RABBITMQ_DEFAULT_VHOST=${RABBITMQ_VHOST}
-      - RABBITMQ_NO_GUEST_USER=true
     networks:
       - app-network
     healthcheck:
@@ -77,7 +75,6 @@ services:
       retries: 5
       start_period: 10s
     
-
   celery:
     <<: *app-base
     entrypoint: []
@@ -102,7 +99,7 @@ services:
         condition: service_started
 
   nginx:
-    image: "${DOCKER_IMAGE_FRONTEND_PROD}:${TAG-latest}"
+    image: "${DOCKER_IMAGE_FRONTEND}:${TAG-latest}"
     build:
       context: ./frontend
       target: production 
@@ -114,8 +111,6 @@ services:
       - db
     networks:
       - app-network
-    env_file:
-      - .env
     environment:
        - NGINX_SERVER_NAME=${NGINX_SERVER_NAME}
   

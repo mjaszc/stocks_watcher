@@ -1,12 +1,11 @@
 - name: UFW 
-  hosts: all
+  hosts: webservers
   tasks:
     - name: UFW config
       include_role:
         name: ufw
-
 - name: Docker
-  hosts: all
+  hosts: webservers
   tasks:
     - name: Configure Docker
       include_role:

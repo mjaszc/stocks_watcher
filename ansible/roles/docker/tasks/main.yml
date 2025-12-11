@@ -1,5 +1,5 @@
 - name: Install Docker packages 1/2
-  remote_user: root
+  become: true
   ansible.builtin.apt:
     name: "{{ item }}"
     state: present
@@ -13,6 +13,7 @@
     - docker
 
 - name: Add Dockers official GPG key
+  become: true
   ansible.builtin.get_url:
     url: https://download.docker.com/linux/ubuntu/gpg
     dest: /etc/apt/keyrings/docker.asc
@@ -21,6 +22,7 @@
     - docker
 
 - name: Add Docker APT repository
+  become: true
   ansible.builtin.apt_repository:
     repo: "deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
     state: present
@@ -28,7 +30,7 @@
     - docker
 
 - name: Install Docker packages 2/2
-  remote_user: root
+  become: true
   ansible.builtin.apt:
     name: "{{ item }}"
     state: present
@@ -43,34 +45,23 @@
     - docker
 
 - name: Create {{ directory_name }} directory
+  become: true
   ansible.builtin.file:
     path: /home/ubuntu/{{ directory_name }}
     state: directory
-    owner: root
+    owner: ubuntu
     mode: '0755'
 
 - name: Copy docker-compose.yml to remote host
+  become: true
   copy:
     src: "../../../docker-compose.yml"
     dest: "/home/ubuntu/{{ directory_name }}/docker-compose.yml"
     mode: '0644'
 
-- name: Copy .env file to remote host
+- name: Copy .env.production file to remote host
+  become: true
   copy:
-    src: "../../../.env"
+    src: "../../../.env.production"
     dest: "/home/ubuntu/{{ directory_name }}/.env"
     mode: '0644'
-
-- name: Ensure UFW allows port 8000/tcp (if UFW installed)
-  ansible.builtin.ufw:
-     rule: allow
-     port: '8000'
-     proto: tcp
-  when: ansible_facts.packages.ufw is defined
-
-- name: Start the compose stack (create & start)
-  community.docker.docker_compose_v2:
-    project_src: "/home/ubuntu/{{ directory_name }}"
-    state: present
-    build: "never"
-  register: compose_result

@@ -4,7 +4,7 @@ ENV PYTHONUNBUFFERED=1
 
 WORKDIR /backend/
 
-# Install uv
+# Install uv (as done by user)
 COPY --from=ghcr.io/astral-sh/uv:0.8.23 /uv /uvx /bin/
 
 ENV PATH="/backend/.venv/bin:$PATH"
@@ -20,7 +20,7 @@ RUN --mount=type=cache,target=/root/.cache/uv \
 
 ENV PYTHONPATH=/backend
 
-COPY . /backend 
+COPY . /backend
 
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync
