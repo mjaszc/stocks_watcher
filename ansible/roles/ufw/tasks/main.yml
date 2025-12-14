@@ -23,6 +23,13 @@
     proto: tcp
   become: true
 
+- name: Allow port 81 for NPM
+  community.general.ufw:
+    rule: allow
+    port: "81"
+    proto: tcp
+  become: true
+
 - name: Allow HTTPS connections
   community.general.ufw:
     rule: allow

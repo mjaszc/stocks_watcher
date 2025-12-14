@@ -10,3 +10,4 @@ container_images:
   - name: "rabbitmq:4.2"
   - name: "jasmar2/react-app:latest"
   - name: "jasmar2/fastapi-app:latest"
+  - name: "jc21/nginx-proxy-manager:latest"

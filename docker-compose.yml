@@ -1,7 +1,7 @@
 x-app-base: &app-base
   image: "${DOCKER_IMAGE_BACKEND_PROD}:${TAG-latest}"
   env_file:
-    - .env
+    - .env.production
   networks:
     - app-network
   restart: unless-stopped
@@ -26,7 +26,7 @@ services:
     volumes:
       - app-db-data:/var/lib/postgresql/data/pgdata
     env_file:
-      - .env
+      - .env.production
     environment:
       - PGDATA=/var/lib/postgresql/data/pgdata
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
@@ -62,7 +62,7 @@ services:
     volumes:
       - rabbitmq-data:/var/lib/rabbitmq/
     env_file:
-      - .env
+      - .env.production
     environment:
       - RABBITMQ_DEFAULT_USER=${RABBITMQ_USER}
       - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASS}
@@ -107,24 +107,35 @@ services:
       context: ./frontend
       target: production 
     restart: always
-    ports:
-      - "80:80"
+    env_file:
+      - .env.production
+    environment:
+      APP_DOMAIN: ${APP_DOMAIN}
     depends_on:
       - backend
       - db
     networks:
       - app-network
-    env_file:
-      - .env
-    environment:
-       - NGINX_SERVER_NAME=${NGINX_SERVER_NAME}
   
-  # certbot:
-  #   image: certbot/certbot
-  #   volumes:
-  #     - ./nginx/certbot/conf:/etc/letsencrypt
-  #     - ./nginx/certbot/www:/var/www/certbot
-  #   entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"  # Renew certificates every 12 hours
+  nginx-proxy-manager:
+    image: 'jc21/nginx-proxy-manager:latest'
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - '80:80'
+      - '81:81'
+      - '443:443'
+    volumes:
+      - ./npm-data:/data
+      - ./npm-letsencrypt:/etc/letsencrypt
+    env_file:
+      - .env.production
+    environment:
+      APP_DOMAIN: ${APP_DOMAIN} 
+    networks:
+      - app-network
 
 networks:
   app-network:

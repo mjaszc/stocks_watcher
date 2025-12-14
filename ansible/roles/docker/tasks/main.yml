@@ -63,5 +63,5 @@
   become: true
   copy:
     src: "../../../.env.production"
-    dest: "/home/ubuntu/{{ directory_name }}/.env"
+    dest: "/home/ubuntu/{{ directory_name }}/.env.production"
     mode: '0644'
