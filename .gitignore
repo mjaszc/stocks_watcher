@@ -228,3 +228,5 @@ nginx/certbot/*
 
 data/*
 letsencrypt/*
+
+.github/workflows/.secrets

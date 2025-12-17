@@ -59,20 +59,35 @@
     dest: "/home/ubuntu/{{ directory_name }}/docker-compose.yml"
     mode: '0644'
 
-- name: Copy .env.production file to remote host
-  become: true
-  copy:
-    src: "../../../.env.production"
-    dest: "/home/ubuntu/{{ directory_name }}/.env.production"
+- name: Check if .env.production exists on VPS
+  stat:
+    path: "/home/ubuntu/{{ directory_name }}/.env.production"
+  register: vps_env_file
+
+- name: Stop if file is missing
+  fail:
+    msg: "The .env.production file is missing from the VPS. Please upload it manually once."
+  when: not vps_env_file.stat.exists
+
+- name: Apply permissions if it exists
+  file:
+    path: "/home/ubuntu/{{ directory_name }}/.env.production"
     mode: '0644'
+    state: file
+  when: vps_env_file.stat.exists
 
 - name: Start the compose stack (create & start) with custom environment file
   become: true
   community.docker.docker_compose_v2:
     project_src: "/home/ubuntu/{{ directory_name }}"
     state: present
-    build: "never"  
+    build: "never"
     pull: "always"
     env_files:
       - .env.production
+  # Pass variables here so the 'docker compose' command sees them
+  environment:
+    TAG: "{{ app_tag | default('latest') }}"
+    DOCKER_IMAGE_BACKEND_PROD: "jasmar2/fastapi-app"
+    DOCKER_IMAGE_FRONTEND_PROD: "jasmar2/react-app"
   register: compose_result

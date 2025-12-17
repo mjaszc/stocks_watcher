@@ -1,0 +1,72 @@
+name: Docker image build and push to DockerHub and deploy to VPS
+
+on:
+  push:
+    branches: ["main"]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout the code
+        uses: actions/checkout@v4
+        
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Ansible and collections
+        run: |
+          python -m pip install --upgrade pip
+          pip install ansible
+          ansible-galaxy collection install community.docker
+
+      - name: Set Short Commit SHA
+        id: vars
+        run: echo "SHORT_SHA=${GITHUB_SHA::7}" >> $GITHUB_ENV
+
+      - name: Build and push frontend
+        uses: docker/build-push-action@v6
+        with:
+          context: ./frontend
+          push: true
+          tags: jasmar2/react-app:${{ env.SHORT_SHA }}
+
+      - name: Build and push backend
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          push: true
+          tags: jasmar2/fastapi-app:${{ env.SHORT_SHA }}
+
+      - name: Save deployment SSH key
+        run: |
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > gh_actions_key
+          chmod 600 gh_actions_key
+
+      - name: Set up Ansible Vault Password
+        run: echo "${{ secrets.ANSIBLE_VAULT_PASSWORD }}" > .vault_pass_temp
+
+      - name: Run Ansible Playbook
+        env:
+          ANSIBLE_HOST_KEY_CHECKING: 'False'
+        run: |
+            ansible-playbook \
+            -i ./ansible/actions_inventory.ini \
+            ./ansible/site.yml \
+            --vault-password-file .vault_pass_temp \
+            -e "frontend_tag=${{ env.SHORT_SHA }}" \
+            -e "backend_tag=${{ env.SHORT_SHA }}" \
+            -e "app_tag=${{ env.SHORT_SHA }}"
+
+      - name: Cleanup Vault Password File
+        if: always()
+        run: rm -f .vault_pass_temp
