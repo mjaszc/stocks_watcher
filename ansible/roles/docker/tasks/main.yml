@@ -65,3 +65,14 @@
     src: "../../../.env.production"
     dest: "/home/ubuntu/{{ directory_name }}/.env.production"
     mode: '0644'
+
+- name: Start the compose stack (create & start) with custom environment file
+  become: true
+  community.docker.docker_compose_v2:
+    project_src: "/home/ubuntu/{{ directory_name }}"
+    state: present
+    build: "never"  
+    pull: "always"
+    env_files:
+      - .env.production
+  register: compose_result
