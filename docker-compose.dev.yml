@@ -99,15 +99,11 @@ services:
         condition: service_started
 
   nginx:
-    image: "${DOCKER_IMAGE_FRONTEND_PROD}:${TAG-latest}"
+    image: "${DOCKER_IMAGE_FRONTEND}:${TAG-latest}"
     build:
       context: ./frontend
       target: production 
     restart: always
-    env_file:
-      - .env.production
-    environment:
-      APP_DOMAIN: ${APP_DOMAIN}
     depends_on:
       - backend
       - db
@@ -127,10 +123,6 @@ services:
     volumes:
       - ./npm-data:/data
       - ./npm-letsencrypt:/etc/letsencrypt
-    env_file:
-      - .env.production
-    environment:
-      APP_DOMAIN: ${APP_DOMAIN} 
     networks:
       - app-network
   

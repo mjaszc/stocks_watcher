@@ -230,3 +230,6 @@ data/*
 letsencrypt/*
 
 .github/workflows/.secrets
+
+/npm-data
+/npm-letsencrypt

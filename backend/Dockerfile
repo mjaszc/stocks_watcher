@@ -22,7 +22,7 @@ ENV PYTHONPATH=/backend
 
 COPY . /backend
 
-RUN mkdir datasets
+RUN mkdir -p datasets
 
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync
