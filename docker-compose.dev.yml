@@ -16,6 +16,7 @@ x-app-base: &app-base
 services:
   db:
     image: postgres:17
+    container_name: db
     restart: always
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
@@ -39,6 +40,7 @@ services:
     <<: *app-base
     build:
       context: ./backend
+    container_name: backend
     restart: on-failure
     depends_on:
       db:
@@ -52,6 +54,7 @@ services:
 
   rabbitmq:
     image: rabbitmq:4.2
+    container_name: rabbitmq
     hostname: "rabbitmq"
     ports:
       - 5672:5672
@@ -77,6 +80,7 @@ services:
     <<: *app-base
     entrypoint: []
     command: celery -A data.tasks worker -l info
+    container_name: celery
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -89,6 +93,7 @@ services:
     <<: *app-base
     entrypoint: []
     command: celery -A data.tasks beat -l info
+    container_name: celery-beat
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -98,6 +103,7 @@ services:
 
   nginx:
     image: "${DOCKER_IMAGE_FRONTEND}:${TAG-latest}"
+    container_name: nginx
     build:
       context: ./frontend
       target: production 
@@ -110,6 +116,7 @@ services:
 
   nginx-proxy-manager:
     image: 'jc21/nginx-proxy-manager:latest'
+    container_name: nginx-proxy-manager
     restart: unless-stopped
     depends_on:
       db:
@@ -126,8 +133,10 @@ services:
   
   prometheus:
     image: prom/prometheus:latest
+    container_name: prometheus
     volumes:
-      - "./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml"
+      - prometheus-data:/prometheus
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
     ports:
       - 9090:9090
     networks:
@@ -135,8 +144,26 @@ services:
 
   node-exporter:
     image: prom/node-exporter:latest
+    container_name: node-exporter
     ports:
       - 9100:9100
+    networks:
+      - app-network
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    restart: unless-stopped
+    ports:
+      - '3000:3000'
+    volumes:
+      - grafana-storage:/var/lib/grafana
+    env_file:
+      - .env.local
+    environment:
+      - GF_SERVER_ROOT_URL=${GRAFANA_URL}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
+      - GF_USERS_ALLOW_SIGN_UP=false
     networks:
       - app-network
 
@@ -148,3 +175,5 @@ volumes:
   app-db-data:
   rabbitmq-data:
   frontend-dist:
+  prometheus-data:
+  grafana-storage:
