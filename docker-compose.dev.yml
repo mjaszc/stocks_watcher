@@ -40,8 +40,6 @@ services:
     build:
       context: ./backend
     restart: on-failure
-    ports:
-      - "8000:8000"
     depends_on:
       db:
         condition: service_healthy
@@ -126,6 +124,22 @@ services:
     networks:
       - app-network
   
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - "./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml"
+    ports:
+      - 9090:9090
+    networks:
+      - app-network
+
+  node-exporter:
+    image: prom/node-exporter:latest
+    ports:
+      - 9100:9100
+    networks:
+      - app-network
+
 networks:
   app-network:
     driver: bridge
