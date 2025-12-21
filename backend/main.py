@@ -3,6 +3,7 @@ from fastapi.routing import APIRoute
 from core.config import settings
 from api.main import api_router
 from starlette.middleware.cors import CORSMiddleware
+from prometheus_client import make_asgi_app
 
 
 def custom_generate_unique_id(route: APIRoute) -> str:
@@ -14,6 +15,9 @@ app = FastAPI(
     openapi_url=f"{settings.API_V1_STR}/openapi.json",
     generate_unique_id_function=custom_generate_unique_id,
 )
+metrics_app = make_asgi_app()
+# Prometheus metrics ep
+app.mount("/metrics", metrics_app)
 
 if settings.all_cors_origins:
     app.add_middleware(

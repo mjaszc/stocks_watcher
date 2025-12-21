@@ -14,6 +14,7 @@ from schemas.stock_data import (
     Stock5YResponse,
     Stock20YResponse,
 )
+from core.metrics import REQUEST_COUNTER
 
 router = APIRouter(prefix="/stocks", tags=["stocks"])
 
@@ -31,6 +32,7 @@ def get_stocks_1m(
     symbols: str = Query(..., description="Comma-separated list of stock symbols"),
     db: Session = Depends(get_db),
 ) -> dict[str, list[Stock1MoResponse]]:
+    REQUEST_COUNTER.labels(endpoint="/stocks/1mo").inc()
     return get_stock_prices_by_period("1mo", symbols, db)
 
 
@@ -39,6 +41,7 @@ def get_stocks_3m(
     symbols: str = Query(..., description="Comma-separated list of stock symbols"),
     db: Session = Depends(get_db),
 ) -> dict[str, list[Stock3MoResponse]]:
+    REQUEST_COUNTER.labels(endpoint="/stocks/3mo").inc()
     return get_stock_prices_by_period("3mo", symbols, db)
 
 
@@ -47,6 +50,7 @@ def get_stocks_6m(
     symbols: str = Query(..., description="Comma-separated list of stock symbols"),
     db: Session = Depends(get_db),
 ) -> dict[str, list[Stock6MoResponse]]:
+    REQUEST_COUNTER.labels(endpoint="/stocks/6mo").inc()
     return get_stock_prices_by_period("6mo", symbols, db)
 
 
@@ -55,6 +59,7 @@ def get_stocks_1y(
     symbols: str = Query(..., description="Comma-separated list of stock symbols"),
     db: Session = Depends(get_db),
 ) -> dict[str, list[Stock1YResponse]]:
+    REQUEST_COUNTER.labels(endpoint="/stocks/1y").inc()
     return get_stock_prices_by_period("1y", symbols, db)
 
 
@@ -63,6 +68,7 @@ def get_stocks_5y(
     symbols: str = Query(..., description="Comma-separated list of stock symbols"),
     db: Session = Depends(get_db),
 ) -> dict[str, list[Stock5YResponse]]:
+    REQUEST_COUNTER.labels(endpoint="/stocks/5y").inc()
     return get_stock_prices_by_period("5y", symbols, db)
 
 
@@ -71,6 +77,7 @@ def get_stocks_20y(
     symbols: str = Query(..., description="Comma-separated list of stock symbols"),
     db: Session = Depends(get_db),
 ) -> dict[str, list[Stock20YResponse]]:
+    REQUEST_COUNTER.labels(endpoint="/stocks/20y").inc()
     return get_stock_prices_by_period("20y", symbols, db)
 
 
