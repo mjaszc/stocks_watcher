@@ -44,6 +44,27 @@
     proto: tcp
   become: true
 
+- name: Allow port 9090 for Prometheus service
+  community.general.ufw:
+    rule: allow
+    port: "9090"
+    proto: tcp
+  become: true
+
+- name: Allow port 9100 for Node Exporter service
+  community.general.ufw:
+    rule: allow
+    port: "9100"
+    proto: tcp
+  become: true
+
+- name: Allow port 3000 for Grafana service
+  community.general.ufw:
+    rule: allow
+    port: "3000"
+    proto: tcp
+  become: true
+
 - name: UFW - Enable the firewall service
   community.general.ufw:
     state: enabled

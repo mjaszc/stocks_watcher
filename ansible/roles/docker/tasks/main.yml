@@ -59,6 +59,13 @@
     dest: "/home/ubuntu/{{ directory_name }}/docker-compose.yml"
     mode: '0644'
 
+- name: Copy prometheus config to remote host
+  become: true
+  copy:
+    src: "../../../monitoring/prometheus.yml"
+    dest: "/home/ubuntu/{{ directory_name }}/monitoring/prometheus.yml"
+    mode: '0644'
+
 - name: Check if .env.production exists on VPS
   stat:
     path: "/home/ubuntu/{{ directory_name }}/.env.production"
