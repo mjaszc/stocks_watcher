@@ -3,6 +3,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 from dateutil.relativedelta import relativedelta
 from sqlalchemy import func
+from collections import defaultdict
 
 from models.stock_data import StockData
 from db.session import get_db, Session as s
@@ -15,6 +16,7 @@ from schemas.stock_data import (
     Stock20YResponse,
 )
 from core.metrics import REQUEST_COUNTER
+from utils.decorators import cache_stock_data
 
 router = APIRouter(prefix="/stocks", tags=["stocks"])
 
@@ -28,7 +30,8 @@ def get_max_date():
 
 
 @router.get("/1mo")
-def get_stocks_1m(
+@cache_stock_data(ttl=86400)
+async def get_stocks_1m(
     symbols: str = Query(..., description="Comma-separated list of stock symbols"),
     db: Session = Depends(get_db),
 ) -> dict[str, list[Stock1MoResponse]]:
@@ -37,7 +40,8 @@ def get_stocks_1m(
 
 
 @router.get("/3mo")
-def get_stocks_3m(
+@cache_stock_data(ttl=86400)
+async def get_stocks_3m(
     symbols: str = Query(..., description="Comma-separated list of stock symbols"),
     db: Session = Depends(get_db),
 ) -> dict[str, list[Stock3MoResponse]]:
@@ -46,7 +50,8 @@ def get_stocks_3m(
 
 
 @router.get("/6mo")
-def get_stocks_6m(
+@cache_stock_data(ttl=86400)
+async def get_stocks_6m(
     symbols: str = Query(..., description="Comma-separated list of stock symbols"),
     db: Session = Depends(get_db),
 ) -> dict[str, list[Stock6MoResponse]]:
@@ -55,7 +60,8 @@ def get_stocks_6m(
 
 
 @router.get("/1y")
-def get_stocks_1y(
+@cache_stock_data(ttl=86400)
+async def get_stocks_1y(
     symbols: str = Query(..., description="Comma-separated list of stock symbols"),
     db: Session = Depends(get_db),
 ) -> dict[str, list[Stock1YResponse]]:
@@ -64,7 +70,8 @@ def get_stocks_1y(
 
 
 @router.get("/5y")
-def get_stocks_5y(
+@cache_stock_data(ttl=86400)
+async def get_stocks_5y(
     symbols: str = Query(..., description="Comma-separated list of stock symbols"),
     db: Session = Depends(get_db),
 ) -> dict[str, list[Stock5YResponse]]:
@@ -73,7 +80,8 @@ def get_stocks_5y(
 
 
 @router.get("/20y")
-def get_stocks_20y(
+@cache_stock_data(ttl=86400)
+async def get_stocks_20y(
     symbols: str = Query(..., description="Comma-separated list of stock symbols"),
     db: Session = Depends(get_db),
 ) -> dict[str, list[Stock20YResponse]]:
@@ -126,15 +134,9 @@ def get_stock_prices_by_period(
 
     stock_data = db.execute(stmt).scalars().all()
 
-    result = {}
-    for symbol in symbol_list:
-        symbol_data = [data for data in stock_data if data.symbol == symbol]
-        if not symbol_data:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Stock data not found for symbol: {symbol}",
-            )
-        result[symbol] = symbol_data
+    result = defaultdict(list)
+    for data in stock_data:
+        result[data.symbol].append(data)
 
     return result
 

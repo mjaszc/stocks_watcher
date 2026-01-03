@@ -1,19 +1,25 @@
 from celery import Celery
 from celery.schedules import crontab
 import requests
+import redis.asyncio as redis
 
 from .load_stock_data import StockDataLoader
 from core.config import settings
+from utils.decorators import redis_client
+
 
 app = Celery(broker=settings.CELERY_BROKER_URL)
 app.conf.enable_utc = True
 app.conf.timezone = "UTC"  # type: ignore
 
 app.conf.beat_schedule = {
-    "download-and-load-stock-data-every-midnight": {
+    "download-and-load-stock-data-every-afternoon": {
         "task": "data.tasks.download_and_load_stock_data",
-        # Execute daily at midnight.
-        "schedule": crontab(minute=0, hour=0),
+        "schedule": crontab(minute=0, hour=18),
+    },
+    "clear-redis-stock-cache-every-afternoon": {
+        "task": "data.tasks.clear_all_stock_cache",
+        "schedule": crontab(minute=45, hour=17),
     },
 }
 
@@ -36,6 +42,12 @@ def download_dataset(url, save_path):
         print(f"Downloaded: {save_path}")
     else:
         print(f"Failed to download. Status code: {response.status_code}")
+
+
+@app.task
+async def clear_all_stock_cache():
+    await redis_client.flushdb(asynchronous=True)
+    print("Redis cache fully cleared.")
 
 
 @app.task
