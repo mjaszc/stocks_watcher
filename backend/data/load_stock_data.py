@@ -2,10 +2,11 @@ import pandas as pd
 import uuid
 from decimal import Decimal
 from datetime import datetime
-from db.session import Session
 from sqlalchemy import text, func
 from sqlalchemy.dialects.postgresql import insert
+
 from models.stock_data import StockData
+from db.session import Session
 
 
 class StockDataLoader:
