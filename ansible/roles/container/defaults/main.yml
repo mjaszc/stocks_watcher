@@ -12,3 +12,4 @@ container_images:
   - name: "jasmar2/fastapi-app:{{ app_tag | default('latest') }}"
   - name: "jc21/nginx-proxy-manager:latest"
   - name: "grafana/grafana:latest"
+  - name: "redis:7-alpine"

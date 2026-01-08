@@ -171,6 +171,20 @@ services:
     networks:
       - app-network
 
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    restart: unless-stopped
+    volumes:
+      - redis-data:/data
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
 networks:
   app-network:
     driver: bridge
@@ -180,3 +194,4 @@ volumes:
   rabbitmq-data:
   frontend-dist:
   grafana-storage:
+  redis-data:

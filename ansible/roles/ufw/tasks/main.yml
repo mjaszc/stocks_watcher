@@ -65,6 +65,13 @@
     proto: tcp
   become: true
 
+- name: Allow port 6379 for Redis service
+  community.general.ufw:
+    rule: allow
+    port: "6379"
+    proto: tcp
+  become: true
+
 - name: UFW - Enable the firewall service
   community.general.ufw:
     state: enabled
