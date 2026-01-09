@@ -1,12 +1,13 @@
 from celery import Celery
 from celery.schedules import crontab
 import requests
-import redis.asyncio as redis
+import redis
 
 from .load_stock_data import StockDataLoader
 from core.config import settings
 from utils.decorators import redis_client
 
+sync_redis = redis.from_url(settings.REDIS_URL)
 
 app = Celery(broker=settings.CELERY_BROKER_URL)
 app.conf.enable_utc = True
@@ -45,8 +46,8 @@ def download_dataset(url, save_path):
 
 
 @app.task
-async def clear_all_stock_cache():
-    await redis_client.flushdb(asynchronous=True)
+def clear_all_stock_cache():
+    sync_redis.flushdb()
     print("Redis cache fully cleared.")
 
 

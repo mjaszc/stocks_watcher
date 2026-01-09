@@ -90,3 +90,7 @@
     DOCKER_IMAGE_BACKEND_PROD: "jasmar2/fastapi-app"
     DOCKER_IMAGE_FRONTEND_PROD: "jasmar2/react-app"
   register: compose_result
+
+- name: Prune unused Docker objects
+  become: true
+  ansible.builtin.shell: docker system prune -a -f

@@ -22,6 +22,7 @@ ENV PYTHONPATH=/backend
 
 COPY . /backend
 
+# To store datasets
 RUN mkdir -p datasets
 
 RUN --mount=type=cache,target=/root/.cache/uv \
@@ -30,3 +31,14 @@ RUN --mount=type=cache,target=/root/.cache/uv \
 RUN chmod +x entrypoint.sh
 
 ENTRYPOINT ["/backend/entrypoint.sh"]
+
+# Create a non-root user
+RUN addgroup --system appgroup && adduser --system --group appuser
+
+# Set ownership for the application folder
+WORKDIR /app
+COPY . /app
+RUN chown -R appuser:appgroup /app
+
+# Switch to the non-root user
+USER appuser

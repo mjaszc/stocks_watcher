@@ -48,6 +48,9 @@ services:
       db:
         condition: service_healthy
         restart: true
+      redis:
+        condition: service_healthy
+        restart: true
     environment:
       <<: *common-env
       DOMAIN: ${DOMAIN}
