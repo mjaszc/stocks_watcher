@@ -65,7 +65,6 @@
   with_items:
     - { src: "../../../docker-compose.yml", dest: "docker-compose.yml" }
     - { src: "../../../monitoring/prometheus.yml", dest: "monitoring/prometheus.yml" }
-    - { src: "../../../.env.production", dest: ".env.production" }
 
 - name: Update only the TAG variable in .env.production
   become: true
