@@ -56,7 +56,7 @@
     - "{{ directory_name }}"
     - "{{ directory_name }}/monitoring"
 
-- name: Copy deployment files
+- name: Copy deployment and env files
   become: true
   ansible.builtin.copy:
     src: "{{ item.src }}"
@@ -65,16 +65,24 @@
   with_items:
     - { src: "../../../docker-compose.yml", dest: "docker-compose.yml" }
     - { src: "../../../monitoring/prometheus.yml", dest: "monitoring/prometheus.yml" }
+    - { src: "../../../.env.production", dest: ".env.production" }
 
-- name: Ensure .env.production exists
-  ansible.builtin.stat:
+- name: Update only the TAG variable in .env.production
+  become: true
+  ansible.builtin.lineinfile:
     path: "/home/ubuntu/{{ directory_name }}/.env.production"
-  register: vps_env_file
+    regexp: '^TAG='
+    line: "TAG={{ app_tag }}"
+    create: yes
+    mode: '0644'
 
-- name: Fail if environment config is missing
-  ansible.builtin.fail:
-    msg: "Missing .env.production on VPS."
-  when: not vps_env_file.stat.exists
+- name: Deploy Stack using Docker Compose
+  become: true
+  community.docker.docker_compose_v2:
+    project_src: "/home/ubuntu/{{ directory_name }}"
+    state: present
+    env_files:
+      - .env.production
 
 - name: Deploy Stack using Docker Compose
   become: true
