@@ -40,7 +40,7 @@ jobs:
       - name: Run Tests
         env:
           TEST_POSTGRES_DB: test_stocks
-          POSTGRES_USER: jasmar2
+          POSTGRES_USER: postgres
           POSTGRES_PASS: testpassword
           POSTGRES_SERVER: localhost
           POSTGRES_PORT: 5433

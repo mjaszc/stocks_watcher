@@ -14,7 +14,7 @@ from decimal import Decimal
 @pytest.fixture(scope="session")
 def test_db_engine():
     engine = create_engine(
-        "postgresql+psycopg2://jasmar2:testpassword@localhost:5433/postgres",
+        "postgresql+psycopg2://postgres:testpassword@localhost:5433/postgres",
         isolation_level="AUTOCOMMIT",
     )
 
@@ -29,7 +29,7 @@ def test_db_engine():
 
     # Connect to test db
     test_engine = create_engine(
-        f"postgresql+psycopg2://jasmar2:testpassword@localhost:5433/{test_db_name}"
+        f"postgresql+psycopg2://postgres:testpassword@localhost:5433/{test_db_name}"
     )
     StockData.metadata.create_all(test_engine)
 
