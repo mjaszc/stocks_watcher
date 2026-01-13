@@ -11,7 +11,7 @@ jobs:
       postgres:
         image: postgres:17
         env:
-          POSTGRES_USER: jasmar2
+          POSTGRES_USER: postgres
           POSTGRES_PASSWORD: testpassword
           POSTGRES_DB: postgres
         ports:
@@ -39,7 +39,7 @@ jobs:
 
       - name: Run Tests
         env:
-          TEST_POSTGRES_DB: test_db_name
+          TEST_POSTGRES_DB: test_stocks
           POSTGRES_USER: jasmar2
           POSTGRES_PASS: testpassword
           POSTGRES_SERVER: localhost
