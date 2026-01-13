@@ -55,6 +55,7 @@
   with_items:
     - "{{ directory_name }}"
     - "{{ directory_name }}/monitoring"
+    - "{{ directory_name }}/datasets"
 
 - name: Copy deployment and env files
   become: true
