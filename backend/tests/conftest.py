@@ -14,7 +14,7 @@ from decimal import Decimal
 @pytest.fixture(scope="session")
 def test_db_engine():
     engine = create_engine(
-        "postgresql+psycopg2://postgres:postgres@localhost:5432/postgres",
+        "postgresql+psycopg2://jasmar2:testpassword@localhost:5433/postgres",
         isolation_level="AUTOCOMMIT",
     )
 
@@ -29,7 +29,7 @@ def test_db_engine():
 
     # Connect to test db
     test_engine = create_engine(
-        f"postgresql+psycopg2://postgres:postgres@localhost:5432/{test_db_name}"
+        f"postgresql+psycopg2://jasmar2:testpassword@localhost:5433/{test_db_name}"
     )
     StockData.metadata.create_all(test_engine)
 
@@ -42,11 +42,11 @@ def test_db_engine():
         conn.execute(
             text(
                 f"""
-            SELECT pg_terminate_backend(pg_stat_activity.pid)
-            FROM pg_stat_activity
-            WHERE pg_stat_activity.datname = '{test_db_name}'
-            AND pid <> pg_backend_pid()
-        """
+                SELECT pg_terminate_backend(pg_stat_activity.pid)
+                FROM pg_stat_activity
+                WHERE pg_stat_activity.datname = '{test_db_name}'
+                AND pid <> pg_backend_pid()
+                """
             )
         )
         conn.execute(text(f"DROP DATABASE {test_db_name}"))

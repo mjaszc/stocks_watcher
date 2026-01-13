@@ -37,16 +37,16 @@ class Settings(BaseSettings):
             self.FRONTEND_HOST
         ]
 
-    CELERY_BROKER_URL: str
+    CELERY_BROKER_URL: str = ""
 
     POSTGRES_SERVER: str
-    POSTGRES_PORT: int = 5432
+    POSTGRES_PORT: int = 5433
     POSTGRES_USER: str
     POSTGRES_PASSWORD: str = ""
     POSTGRES_DB: str = ""
 
-    REDIS_URL: str
-    REDIS_HOST: str
+    REDIS_URL: str = ""
+    REDIS_HOST: str = ""
 
     @computed_field
     @property
@@ -61,6 +61,7 @@ class Settings(BaseSettings):
         )
 
     TEST_POSTGRES_DB: str = "test_stocks"
+    TEST_POSTGRES_SERVER: str = "localhost"
 
     @computed_field
     @property
@@ -69,7 +70,7 @@ class Settings(BaseSettings):
             scheme="postgresql+psycopg2",
             username=self.POSTGRES_USER,
             password=self.POSTGRES_PASSWORD,
-            host=self.POSTGRES_SERVER,
+            host=self.TEST_POSTGRES_SERVER,
             port=self.POSTGRES_PORT,
             path=self.TEST_POSTGRES_DB,
         )
