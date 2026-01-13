@@ -15,7 +15,7 @@ jobs:
           POSTGRES_PASSWORD: testpassword
           POSTGRES_DB: postgres
         ports:
-          - 5434:5432
+          - 5433:5432
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -43,7 +43,7 @@ jobs:
           POSTGRES_USER: jasmar2
           POSTGRES_PASS: testpassword
           POSTGRES_SERVER: localhost
-          POSTGRES_PORT: 5434
+          POSTGRES_PORT: 5433
         run: |
           cd backend
           uv run pytest
