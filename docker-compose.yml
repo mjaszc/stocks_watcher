@@ -60,20 +60,18 @@ services:
   rabbitmq:
     image: rabbitmq:4.2
     container_name: rabbitmq
-    hostname: "rabbitmq"
-    restart: always
-    ports:
-      - 5672:5672
-      - 15672:15672
-    volumes:
-      - rabbitmq-data:/var/lib/rabbitmq/
     env_file:
       - .env.production
+    hostname: "rabbitmq"
+    ports:
+      - '${RABBITMQ_AMQP_PORT}:${RABBITMQ_AMQP_PORT}'
+      - '${RABBITMQ_MGMT_PORT}:${RABBITMQ_MGMT_PORT}'
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq/
     environment:
       - RABBITMQ_DEFAULT_USER=${RABBITMQ_USER}
       - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASS}
       - RABBITMQ_DEFAULT_VHOST=${RABBITMQ_VHOST}
-      - RABBITMQ_NO_GUEST_USER=true
     networks:
       - app-network
     healthcheck:
@@ -125,35 +123,42 @@ services:
   nginx-proxy-manager:
     image: 'jc21/nginx-proxy-manager:latest'
     container_name: nginx-proxy-manager
+    env_file:
+      - .env.production
     restart: unless-stopped
     depends_on:
       db:
         condition: service_healthy
     ports:
-      - '80:80'
-      - '81:81'
-      - '443:443'
+      - '${NPM_HTTP_PORT}:${NPM_HTTP_PORT}'
+      - '${NPM_ADMIN_PORT}:${NPM_ADMIN_PORT}'
+      - '${NPM_HTTPS_PORT}:${NPM_HTTPS_PORT}'
     volumes:
       - ./npm-data:/data
-      - ./npm-letsencrypt:/etc/letsencrypt 
+      - ./npm-letsencrypt:/etc/letsencrypt
     networks:
       - app-network
 
   prometheus:
     image: prom/prometheus:latest
     container_name: prometheus
-    volumes:
-      - "./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml"
+    env_file:
+      - .env.production
     ports:
-      - 9090:9090
+      - '${PROMETHEUS_PORT}:${PROMETHEUS_PORT}'
+    volumes:
+      - prometheus-data:/prometheus
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
     networks:
       - app-network
 
   node-exporter:
     image: prom/node-exporter:latest
     container_name: node-exporter
+    env_file:
+      - .env.production
     ports:
-      - 9100:9100
+      - '${NODE_EXPORTER_PORT}:${NODE_EXPORTER_PORT}'
     networks:
       - app-network
 
@@ -162,7 +167,7 @@ services:
     container_name: grafana
     restart: unless-stopped
     ports:
-      - '3000:3000'
+      - '${GRAFANA_PORT}:${GRAFANA_PORT}'
     volumes:
       - grafana-storage:/var/lib/grafana
     env_file:
@@ -196,5 +201,6 @@ volumes:
   app-db-data:
   rabbitmq-data:
   frontend-dist:
+  prometheus-data:
   grafana-storage:
   redis-data:
