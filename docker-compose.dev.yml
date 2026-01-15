@@ -16,7 +16,7 @@ x-app-base: &app-base
 services:
   db:
     image: postgres:17
-    container_name: db
+    container_name: ${DB_CONTAINER}
     restart: always
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
@@ -40,8 +40,10 @@ services:
     <<: *app-base
     build:
       context: ./backend
-    container_name: backend
+    container_name: ${BACKEND_CONTAINER}
     restart: on-failure
+    ports:
+      - "${BACKEND_PORT}:${BACKEND_PORT}"
     depends_on:
       db:
         condition: service_healthy
@@ -57,7 +59,7 @@ services:
 
   rabbitmq:
     image: rabbitmq:4.2
-    container_name: rabbitmq
+    container_name: ${RABBIT_CONTAINER}
     env_file:
       - .env.local
     hostname: "rabbitmq"
@@ -83,7 +85,7 @@ services:
     <<: *app-base
     entrypoint: []
     command: celery -A data.tasks worker -l info
-    container_name: celery
+    container_name: ${CELERY_CONTAINER}
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -96,7 +98,7 @@ services:
     <<: *app-base
     entrypoint: []
     command: celery -A data.tasks beat -l info
-    container_name: celery-beat
+    container_name: ${CELERY_BEAT_CONTAINER}
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -106,7 +108,9 @@ services:
 
   nginx:
     image: "${DOCKER_IMAGE_FRONTEND}:${TAG-latest}"
-    container_name: nginx
+    container_name: ${NGINX_CONTAINER}
+    env_file:
+      - .env.local
     build:
       context: ./frontend
       target: production 
@@ -119,7 +123,7 @@ services:
 
   nginx-proxy-manager:
     image: 'jc21/nginx-proxy-manager:latest'
-    container_name: nginx-proxy-manager
+    container_name: ${NPM_CONTAINER}
     env_file:
       - .env.local
     restart: unless-stopped
@@ -138,7 +142,7 @@ services:
   
   prometheus:
     image: prom/prometheus:latest
-    container_name: prometheus
+    container_name: ${PROMETHEUS_CONTAINER}
     env_file:
       - .env.local
     ports:
@@ -151,7 +155,7 @@ services:
 
   node-exporter:
     image: prom/node-exporter:latest
-    container_name: node-exporter
+    container_name: ${NODE_EXPORTER_CONTAINER}
     env_file:
       - .env.local
     ports:
@@ -161,7 +165,7 @@ services:
 
   grafana:
     image: grafana/grafana:latest
-    container_name: grafana
+    container_name: ${GRAFANA_CONTAINER}
     restart: unless-stopped
     ports:
       - '${GRAFANA_PORT}:${GRAFANA_PORT}'
@@ -179,7 +183,7 @@ services:
 
   redis:
     image: redis:7-alpine
-    container_name: redis
+    container_name: ${REDIS_CONTAINER}
     restart: unless-stopped
     volumes:
       - redis-data:/data
