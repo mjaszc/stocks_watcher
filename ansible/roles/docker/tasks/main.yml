@@ -56,6 +56,8 @@
     - "{{ directory_name }}"
     - "{{ directory_name }}/monitoring"
     - "{{ directory_name }}/datasets"
+    - "{{ directory_name }}/monitoring/dashboards"
+    - "{{ directory_name }}/monitoring/config"
 
 - name: Copy deployment and env files
   become: true
@@ -66,6 +68,9 @@
   with_items:
     - { src: "../../../docker-compose.yml", dest: "docker-compose.yml" }
     - { src: "../../../monitoring/prometheus.yml", dest: "monitoring/prometheus.yml" }
+    - { src: "../../../monitoring/dashboards/dashboard.json", dest: "monitoring/dashboards/dashboard.json"}
+    - { src: "../../../monitoring/config/datasources.yml", dest: "monitoring/config/datasources.yml"}
+    - { src: "../../../monitoring/config/dashboard.yml", dest: "monitoring/config/dashboard.yml"}
 
 - name: Update only the TAG variable in .env.production
   become: true
