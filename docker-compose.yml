@@ -145,6 +145,7 @@ services:
     container_name: ${PROMETHEUS_CONTAINER}
     env_file:
       - .env.production
+    restart: always
     ports:
       - '${PROMETHEUS_PORT}:${PROMETHEUS_PORT}'
     volumes:
@@ -173,13 +174,13 @@ services:
   grafana:
     image: grafana/grafana:latest
     container_name: ${GRAFANA_CONTAINER}
-    restart: unless-stopped
+    restart: always
     ports:
       - '${GRAFANA_PORT}:${GRAFANA_PORT}'
     volumes:
       - ./monitoring/config/datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml
       - ./monitoring/config/dashboard.yml:/etc/grafana/provisioning/dashboards/dashboard.yml
-      - ./monitoring/config/dashboard.json:/var/lib/grafana/dashboards/dashboard.json
+      - ./monitoring/dashboards:/var/lib/grafana/dashboards
       - grafana-storage:/var/lib/grafana
     env_file:
       - .env.production
