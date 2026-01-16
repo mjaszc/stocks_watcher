@@ -150,6 +150,8 @@ services:
     volumes:
       - prometheus-data:/prometheus
       - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+    depends_on:
+      - node-exporter
     networks:
       - app-network
 
@@ -158,8 +160,13 @@ services:
     container_name: ${NODE_EXPORTER_CONTAINER}
     env_file:
       - .env.production
+    restart: always
     ports:
       - '${NODE_EXPORTER_PORT}:${NODE_EXPORTER_PORT}'
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
     networks:
       - app-network
 
@@ -170,6 +177,9 @@ services:
     ports:
       - '${GRAFANA_PORT}:${GRAFANA_PORT}'
     volumes:
+      - ./monitoring/config/datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml
+      - ./monitoring/config/dashboard.yml:/etc/grafana/provisioning/dashboards/dashboard.yml
+      - ./monitoring/config/dashboard.json:/var/lib/grafana/dashboards/dashboard.json
       - grafana-storage:/var/lib/grafana
     env_file:
       - .env.production
@@ -179,6 +189,8 @@ services:
       - GF_USERS_ALLOW_SIGN_UP=false
     networks:
       - app-network
+    depends_on:
+      - prometheus
 
   redis:
     image: redis:7-alpine
