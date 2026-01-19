@@ -106,4 +106,4 @@
 
 - name: Prune unused Docker objects
   become: true
-  ansible.builtin.shell: docker system prune -a -f
+  ansible.builtin.shell: docker system prune -f

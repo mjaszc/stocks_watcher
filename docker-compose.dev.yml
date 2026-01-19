@@ -143,9 +143,21 @@ services:
   prometheus:
     image: prom/prometheus:latest
     container_name: ${PROMETHEUS_CONTAINER}
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.retention.time=7d'
+      - '--storage.tsdb.wal-compression'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    deploy:
+      resources:
+        limits:
+          memory: 512M
     restart: always
     env_file:
       - .env.local
+    environment:
+      - GOMEMLIMIT=450MiB
     ports:
       - '${PROMETHEUS_PORT}:${PROMETHEUS_PORT}'
     volumes:
@@ -159,6 +171,17 @@ services:
   node-exporter:
     image: prom/node-exporter:latest
     container_name: ${NODE_EXPORTER_CONTAINER}
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.sysfs=/host/sys'
+      - '--path.rootfs=/rootfs'
+      - '--no-collector.zfs'
+      - '--no-collector.btrfs'
+      - '--no-collector.nfs'
+    deploy:
+      resources:
+        limits:
+          memory: 64M
     env_file:
       - .env.local
     restart: always
@@ -174,6 +197,10 @@ services:
   grafana:
     image: grafana/grafana:latest
     container_name: ${GRAFANA_CONTAINER}
+    deploy:
+      resources:
+        limits:
+          memory: 400M
     restart: always
     ports:
       - '${GRAFANA_PORT}:${GRAFANA_PORT}'
