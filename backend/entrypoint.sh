@@ -5,4 +5,4 @@ set -e
 alembic upgrade head 
 echo "Migrations complete. Starting application server..."
 
-exec fastapi run --port 8000 --workers 4 main.py
+exec fastapi run --port 8000 --workers 2 main.py
