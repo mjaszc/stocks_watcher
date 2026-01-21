@@ -21,14 +21,6 @@ from utils.decorators import cache_stock_data
 router = APIRouter(prefix="/stocks", tags=["stocks"])
 
 
-def get_max_date():
-    with s() as db:
-        result = db.query(func.max(StockData.date)).scalar()
-        if result is None:
-            print("Could not get the max date")
-        return result
-
-
 @router.get("/1mo")
 @cache_stock_data(ttl=86400)
 async def get_stocks_1m(
@@ -89,11 +81,34 @@ async def get_stocks_20y(
     return get_stock_prices_by_period("20y", symbols, db)
 
 
+@router.get("/symbols")
+def get_stock_symbols(db: Session = Depends(get_db)) -> list[str]:
+    stmt = select(StockData.symbol).distinct()
+    stock_data = db.execute(stmt).scalars().all()
+
+    return list(stock_data)
+
+
+def get_max_date():
+    """
+    Find max date inside db
+    """
+    with s() as db:
+        result = db.query(func.max(StockData.date)).scalar()
+        if result is None:
+            print("Could not get the max date")
+        return result
+
+
 def get_stock_prices_by_period(
     period: str,
     symbols: str,
     db: Session,
 ):
+    """
+    Method for getting stock data for specified symbol/s
+    from pre-defined periods (1mo, 3mo, etc.)
+    """
     period_mapping = {
         "1mo": relativedelta(months=1),
         "3mo": relativedelta(months=3),
@@ -139,11 +154,3 @@ def get_stock_prices_by_period(
         result[data.symbol].append(data)
 
     return result
-
-
-@router.get("/symbols")
-def get_stock_symbols(db: Session = Depends(get_db)) -> list[str]:
-    stmt = select(StockData.symbol).distinct()
-    stock_data = db.execute(stmt).scalars().all()
-
-    return list(stock_data)
