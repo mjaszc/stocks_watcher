@@ -4,6 +4,7 @@ from core.config import settings
 from api.main import api_router
 from starlette.middleware.cors import CORSMiddleware
 from prometheus_client import make_asgi_app
+from fastapi.responses import ORJSONResponse
 
 
 def custom_generate_unique_id(route: APIRoute) -> str:
@@ -14,6 +15,7 @@ app = FastAPI(
     title=settings.PROJECT_NAME,
     openapi_url=f"{settings.API_V1_STR}/openapi.json",
     generate_unique_id_function=custom_generate_unique_id,
+    default_response_class=ORJSONResponse,
 )
 metrics_app = make_asgi_app()
 # Prometheus metrics ep
