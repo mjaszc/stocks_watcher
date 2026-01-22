@@ -96,7 +96,7 @@ services:
   celery:
     <<: *app-base
     entrypoint: []
-    command: celery -A data.tasks worker -P solo -l info --concurrency=1 --max-tasks-per-child=5 --worker_max_memory_per_child=200000
+    command: celery -A data.tasks worker --pool=prefork --concurrency=1 --max-tasks-per-child=1 --max-memory-per-child=200000 -l info
     container_name: ${CELERY_CONTAINER}
     depends_on:
       rabbitmq:
