@@ -17,6 +17,7 @@ app = FastAPI(
     generate_unique_id_function=custom_generate_unique_id,
     default_response_class=ORJSONResponse,
 )
+
 metrics_app = make_asgi_app()
 # Prometheus metrics ep
 app.mount("/metrics", metrics_app)
