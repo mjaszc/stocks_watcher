@@ -96,7 +96,7 @@ services:
   celery:
     <<: *app-base
     entrypoint: []
-    command: celery -A data.tasks worker -l info --concurrency=2 --max-tasks-per-child=10
+    command: celery -A data.tasks worker -P solo -l info --concurrency=1 --max-tasks-per-child=5 --worker_max_memory_per_child=200000
     container_name: ${CELERY_CONTAINER}
     depends_on:
       rabbitmq:
@@ -104,6 +104,9 @@ services:
         restart: true
       backend:
         condition: service_started
+    environment:
+      - MALLOC_ARENA_MAX=2
+      - MALLOC_TRIM_THRESHOLD_=131072
     restart: unless-stopped
 
   celery-beat:
