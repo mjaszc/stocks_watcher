@@ -9,6 +9,17 @@ import "primereact/resources/themes/lara-dark-teal/theme.css";
 import "primereact/resources/primereact.min.css";
 import "primeicons/primeicons.css";
 
+const DEFAULT_STOCKS = [
+  "NVDA.US",
+  "AAPL.US",
+  "MSFT.US",
+  "AMZN.US",
+  "GOOGL.US",
+  "META.US",
+  "AVGO.US",
+  "TSLA.US",
+];
+
 interface StockData {
   symbol: string;
   date: string;
@@ -37,7 +48,12 @@ const timeframeToNormField: Record<string, keyof StockData> = {
 function App() {
   const [timeframe, setTimeframe] = useState("6mo");
   // State for currently selected stocks
-  const [stocks, setStocks] = useState(["AMZN.US", "AAPL.US", "GOOGL.US"]);
+  const [stocks, setStocks] = useState(() => {
+    // Check if values exists in local storage
+    const savedStocks = localStorage.getItem("user_selected_stocks");
+
+    return savedStocks ? JSON.parse(savedStocks) : DEFAULT_STOCKS;
+  });
   // State for stock options for multiselect
   const [stockOptions, setStockOptions] = useState([]);
   const [chartData, setChartData] = useState<ChartData>({});
@@ -56,6 +72,11 @@ function App() {
     label: symbol,
     value: symbol,
   }));
+
+  // Save to local storage whenever 'selected stocks' changes
+  useEffect(() => {
+    localStorage.setItem("user_selected_stocks", JSON.stringify(stocks));
+  }, [stocks]);
 
   // Retrieving stock symbols from database
   useEffect(() => {

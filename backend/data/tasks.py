@@ -37,8 +37,10 @@ app.conf.beat_schedule = {
 # Dictionary of stocks to download the latest dataset
 stock_symbols = {
     # stock_symbol : dataset_filename
+    "nvda.us": "nvda_us",
     "googl.us": "googl_us",
     "meta.us": "meta_us",
+    "msft.us": "msft_us",
     "amzn.us": "amzn_us",
     "aapl.us": "aapl_us",
     "avgo.us": "avgo_us",
@@ -120,6 +122,7 @@ async def precache_stock_data():
         "ma.us",
         "mu.us",
         "cost.us",
+        "amd.us",
     ]
     available_timeframes = ["1mo", "3mo", "6mo", "1y", "5y", "20y"]
 
