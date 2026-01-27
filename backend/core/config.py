@@ -14,6 +14,7 @@ def parse_cors(v: Any) -> list[str] | str:
 
 
 class Settings(BaseSettings):
+    DOMAIN: str = ""
     ENVIRONMENT: Literal["local", "production"] = "production"
 
     model_config = SettingsConfigDict(
