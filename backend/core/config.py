@@ -15,7 +15,7 @@ def parse_cors(v: Any) -> list[str] | str:
 
 class Settings(BaseSettings):
     DOMAIN: str = ""
-    ENVIRONMENT: Literal["local", "production"] = "production"
+    ENVIRONMENT: Literal["local", "staging", "production"] = "production"
 
     model_config = SettingsConfigDict(
         env_file=f"../.env.{os.getenv('ENVIRONMENT', 'local')}",
@@ -47,7 +47,7 @@ class Settings(BaseSettings):
     POSTGRES_DB: str = ""
 
     REDIS_URL: str = ""
-    REDIS_HOST: str = ""
+    REDIS_HOST: str = "localhost"
 
     @computed_field
     @property

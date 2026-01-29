@@ -6,8 +6,11 @@ from fastapi.encoders import jsonable_encoder
 from sqlalchemy.orm import Session
 import redis.asyncio as redis
 
-REDIS_HOST = os.getenv("REDIS_HOST", "redis")
-redis_client = redis.Redis(host=REDIS_HOST, port=6379, db=0, decode_responses=True)
+from core.config import settings
+
+redis_client = redis.Redis(
+    host=settings.REDIS_HOST, port=6379, db=0, decode_responses=True
+)
 
 
 def cache_stock_data(ttl: int = 86400):
