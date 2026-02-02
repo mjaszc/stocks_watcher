@@ -35,6 +35,18 @@ interface ChartData {
   [symbol: string]: StockData[];
 }
 
+// --- NEW INTERFACES FOR ANOMALIES ---
+interface Anomaly {
+  date_index: number;
+  price: number;
+  return_pct: number;
+  z_score: number;
+}
+
+interface AnomalyData {
+  [symbol: string]: Anomaly[];
+}
+
 // Map selected timeframe accordingly to norm price field from api
 const timeframeToNormField: Record<string, keyof StockData> = {
   "1mo": "norm_1mo",
@@ -47,18 +59,15 @@ const timeframeToNormField: Record<string, keyof StockData> = {
 
 function App() {
   const [timeframe, setTimeframe] = useState("6mo");
-  // State for currently selected stocks
-  const [stocks, setStocks] = useState(() => {
-    // Check if values exists in local storage
+  const [stocks, setStocks] = useState<string[]>(() => {
     const savedStocks = localStorage.getItem("user_selected_stocks");
-
     return savedStocks ? JSON.parse(savedStocks) : DEFAULT_STOCKS;
   });
-  // State for stock options for multiselect
+
   const [stockOptions, setStockOptions] = useState([]);
   const [chartData, setChartData] = useState<ChartData>({});
+  const [anomalyData, setAnomalyData] = useState<AnomalyData>({});
 
-  // For filtering timeframe inside api endpoint
   const timeHorizons = [
     { label: "1 Months", value: "1mo" },
     { label: "3 Months", value: "3mo" },
@@ -73,15 +82,13 @@ function App() {
     value: symbol,
   }));
 
-  // Save to local storage whenever 'selected stocks' changes
   useEffect(() => {
     localStorage.setItem("user_selected_stocks", JSON.stringify(stocks));
   }, [stocks]);
 
-  // Retrieving stock symbols from database
+  // Retrieving stock symbols
   useEffect(() => {
     const url = "/api/v1/stocks/symbols";
-
     axios
       .get(url)
       .then((response) => {
@@ -92,53 +99,96 @@ function App() {
       });
   }, []);
 
-  // Calling URL for chart generation
   useEffect(() => {
-    const baseUrl = "/api/v1/stocks";
-    const stocksParam = stocks.join(",");
-    const url = `${baseUrl}/${timeframe}?symbols=${stocksParam}`;
+    if (stocks.length === 0) return;
 
-    axios
-      .get<ChartData>(url)
-      .then((response) => {
-        setChartData(response.data);
+    const stocksParam = stocks.join(",");
+
+    // Request for Line Chart Data
+    const chartUrl = `/api/v1/stocks/${timeframe}?symbols=${stocksParam}`;
+    const chartReq = axios.get<ChartData>(chartUrl);
+
+    // Request for Anomaly Data
+    const anomalyUrl = `/api/v1/stocks/anomalies/${timeframe}?symbols=${stocksParam}`;
+    const anomalyReq = axios.get<AnomalyData>(anomalyUrl);
+
+    // Fetch both in parallel
+    Promise.all([chartReq, anomalyReq])
+      .then(([chartRes, anomalyRes]) => {
+        setChartData(chartRes.data);
+        setAnomalyData(anomalyRes.data);
       })
       .catch((error) => {
-        console.log(error);
+        console.log("Error fetching data:", error);
       });
   }, [timeframe, stocks]);
 
-  // Generating chart
   useEffect(() => {
-    if (Object.keys(chartData).length == 0) return;
+    if (Object.keys(chartData).length === 0) return;
 
     const normField = timeframeToNormField[timeframe];
 
     // Prepare data for Plotly
-    const traces = Object.entries(chartData).map(([symbol, data]) => {
-      return {
-        x: data.map((item) => item.date),
-        y: data.map((item) => item[normField] as string),
+    const traces = Object.entries(chartData).flatMap(([symbol, data]) => {
+      // Line Trace
+      const dates = data.map((item) => item.date);
+      const prices = data.map((item) => item[normField] as string);
+
+      const lineTrace = {
+        x: dates,
+        y: prices,
         type: "scatter" as const,
         mode: "lines" as const,
         name: symbol,
         line: { width: 2 },
+        legendgroup: symbol,
       };
+
+      // Create the Anomaly Marker Tracing (if anomalies exist)
+      const stockAnomalies = anomalyData[symbol];
+
+      if (stockAnomalies && stockAnomalies.length > 0) {
+        const anomalyTrace = {
+          // Map anomaly back to the correct date string
+          x: stockAnomalies.map((a) => dates[a.date_index]),
+          y: stockAnomalies.map((a) => a.price),
+          mode: "markers" as const,
+          type: "scatter" as const,
+          name: `${symbol} Alerts`,
+          legendgroup: symbol,
+          showlegend: false,
+
+          marker: {
+            symbol: "diamond",
+            size: 10,
+            color: "#fbbf24",
+            line: { color: "white", width: 1 },
+          },
+
+          hoverinfo: "text" as const,
+          text: stockAnomalies.map(
+            (a) =>
+              `<b>${symbol} Event</b><br>` +
+              `Return: ${a.return_pct}%<br>` +
+              `Z-Score: ${a.z_score}`,
+          ),
+        };
+
+        return [lineTrace, anomalyTrace];
+      }
+
+      return [lineTrace];
     });
 
     const layout = {
       xaxis: {
-        title: {
-          text: "Date",
-        },
+        title: { text: "Date" },
         type: "date" as const,
         gridcolor: "rgba(255, 255, 255, 0.1)",
         color: "rgba(255, 255, 255, 0.87)",
       },
       yaxis: {
-        title: {
-          text: "Normalized Value",
-        },
+        title: { text: "Normalized Value" },
         gridcolor: "rgba(255, 255, 255, 0.1)",
         color: "rgba(255, 255, 255, 0.87)",
       },
@@ -159,7 +209,7 @@ function App() {
     };
 
     Plotly.newPlot("chart", traces, layout, config);
-  }, [chartData, timeframe]);
+  }, [chartData, anomalyData, timeframe]);
 
   return (
     <>

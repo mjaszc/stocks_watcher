@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from dateutil.relativedelta import relativedelta
 from sqlalchemy import func
 from collections import defaultdict
+from typing import List, Dict, Any
 
 from models.stock_data import StockData
 from db.session import get_db, Session as s
@@ -15,6 +16,7 @@ from schemas.stock_data import (
     Stock5YResponse,
     Stock20YResponse,
 )
+from data.z_score import extract_normalized_prices, prices_to_numpy_arr, calc_z_score
 from core.metrics import REQUEST_COUNTER
 from utils.decorators import cache_stock_data
 
@@ -87,6 +89,33 @@ def get_stock_symbols(db: Session = Depends(get_db)) -> list[str]:
     stock_data = db.execute(stmt).scalars().all()
 
     return list(stock_data)
+
+
+@router.get("/anomalies/{timeframe}", response_model=Dict[str, List[Dict[str, Any]]])
+async def get_stock_anomalies(
+    timeframe: str,
+    symbols: str = Query(
+        ..., description="Comma-separated list of symbols (e.g. AAPL.US,MSFT.US)"
+    ),
+):
+    """
+    Analyzes stock performance for the given timeframe and returns
+    statistically significant anomalies (Z-Score > 2.5).
+    """
+    try:
+        price_data = await extract_normalized_prices(timeframe, symbols)
+
+        if not price_data:
+            return {}
+
+        numpy_arr = prices_to_numpy_arr(price_data)
+        anomalies = calc_z_score(numpy_arr)
+
+        return anomalies
+
+    except Exception as e:
+        print(f"Analysis failed: {e}")
+        raise HTTPException(status_code=500, detail="Failed to analyze stocks data")
 
 
 def get_max_date():
