@@ -30,7 +30,6 @@ class TestStockDataLoaderInitialization:
             assert record.norm_6mo is not None
             assert record.norm_1y is not None
             assert record.norm_5y is not None
-            assert record.norm_20y is not None
 
     def test_csv_data_loaded_correctly(self, sample_stock_loader_class):
         loader = sample_stock_loader_class
@@ -92,7 +91,6 @@ class TestStockDataLoaderDatabaseOperations:
             assert record.norm_6mo is None
             assert record.norm_1y is None
             assert record.norm_5y is None
-            assert record.norm_20y is None
 
     def test_get_max_date(self, sample_stock_loader_class):
         loader = sample_stock_loader_class
@@ -166,15 +164,6 @@ class TestStockDataLoaderDateCalculations:
         assert result.year == 2020
         assert result.month == 12
 
-    def test_calculate_lookback_date_20y(self, sample_stock_loader_class):
-        loader = sample_stock_loader_class
-
-        today = datetime(2025, 12, 20)
-        result = loader.calculate_lookback_date(today, "20y")
-
-        assert result.year == 2005
-        assert result.month == 12
-
     def test_calculate_lookback_date_invalid_timeframe(self, sample_stock_loader_class):
         loader = sample_stock_loader_class
 
@@ -187,7 +176,7 @@ class TestStockDataLoaderPriceCalculations:
         loader = sample_stock_loader_class
         base_prices = loader.get_base_prices()
 
-        expected_timeframes = ["1mo", "3mo", "6mo", "1y", "5y", "20y"]
+        expected_timeframes = ["1mo", "3mo", "6mo", "1y", "5y"]
         assert all(tf in base_prices for tf in expected_timeframes)
 
         for tf, price in base_prices.items():
@@ -203,7 +192,6 @@ class TestStockDataLoaderPriceCalculations:
             "6mo": Decimal("140.00"),
             "1y": Decimal("135.25"),
             "5y": Decimal("100.00"),
-            "20y": Decimal("50.00"),
         }
 
         loader.update_prices(test_prices)
@@ -213,7 +201,6 @@ class TestStockDataLoaderPriceCalculations:
         assert loader.base_price_6mo == Decimal("140.00")
         assert loader.base_price_1y == Decimal("135.25")
         assert loader.base_price_5y == Decimal("100.00")
-        assert loader.base_price_20y == Decimal("50.00")
 
     def test_calculate_normalzied_price_increase(self, sample_stock_loader_class):
         loader = sample_stock_loader_class

@@ -86,7 +86,6 @@ def test_normalized_prices_nullable(db_session):
     assert result.norm_6mo is None
     assert result.norm_1y is None
     assert result.norm_5y is None
-    assert result.norm_20y is None
     assert result.close == Decimal("304.00")
 
 

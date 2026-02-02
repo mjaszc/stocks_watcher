@@ -29,7 +29,6 @@ class StockResponse(BaseModel):
     norm_6mo: Optional[Decimal] = None
     norm_1y: Optional[Decimal] = None
     norm_5y: Optional[Decimal] = None
-    norm_20y: Optional[Decimal] = None
 
 
 class Stock1MoResponse(BaseModel):
@@ -60,12 +59,6 @@ class Stock5YResponse(BaseModel):
     symbol: str
     date: datetime
     norm_5y: Optional[Decimal] = None
-
-
-class Stock20YResponse(BaseModel):
-    symbol: str
-    date: datetime
-    norm_20y: Optional[Decimal] = None
 
 
 class StockSymbolsResponse(BaseModel):

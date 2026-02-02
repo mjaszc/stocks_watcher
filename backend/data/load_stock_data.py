@@ -20,7 +20,6 @@ class StockDataLoader:
         self.base_price_6mo = Decimal("0.00")
         self.base_price_1y = Decimal("0.00")
         self.base_price_5y = Decimal("0.00")
-        self.base_price_20y = Decimal("0.00")
 
         self.symbol = symbol
         self.df = pd.read_csv(dataset, parse_dates=["Date"], dayfirst=False)
@@ -73,7 +72,6 @@ class StockDataLoader:
         self.calculate_normalized_prices_for_tf("6mo", self.base_price_6mo, "norm_6mo")
         self.calculate_normalized_prices_for_tf("1y", self.base_price_1y, "norm_1y")
         self.calculate_normalized_prices_for_tf("5y", self.base_price_5y, "norm_5y")
-        self.calculate_normalized_prices_for_tf("20y", self.base_price_20y, "norm_20y")
 
     def clear_norm_rows(self, symbol: str):
         if self.session:
@@ -89,7 +87,6 @@ class StockDataLoader:
                     StockData.norm_6mo: None,
                     StockData.norm_1y: None,
                     StockData.norm_5y: None,
-                    StockData.norm_20y: None,
                 },
                 synchronize_session=False,
             )
@@ -124,7 +121,6 @@ class StockDataLoader:
             "6mo": pd.DateOffset(months=6),
             "1y": pd.DateOffset(years=1),
             "5y": pd.DateOffset(years=5),
-            "20y": pd.DateOffset(years=20),
         }
 
         if timeframe not in timeframe_map:
@@ -136,7 +132,7 @@ class StockDataLoader:
 
     def get_base_prices(self) -> dict[str, Decimal]:
         """Get base prices for calculating normalized price for each stock."""
-        timeframes = ["1mo", "3mo", "6mo", "1y", "5y", "20y"]
+        timeframes = ["1mo", "3mo", "6mo", "1y", "5y"]
 
         base_prices = {}
         for tf in timeframes:
@@ -183,7 +179,6 @@ class StockDataLoader:
             "6mo": pd.DateOffset(months=6),
             "1y": pd.DateOffset(years=1),
             "5y": pd.DateOffset(years=5),
-            "20y": pd.DateOffset(years=20),
         }
 
         self.df["Date"] = pd.to_datetime(self.df["Date"])

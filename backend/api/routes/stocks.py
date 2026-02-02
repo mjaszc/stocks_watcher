@@ -14,7 +14,6 @@ from schemas.stock_data import (
     Stock6MoResponse,
     Stock1YResponse,
     Stock5YResponse,
-    Stock20YResponse,
 )
 from data.z_score import extract_normalized_prices, prices_to_numpy_arr, calc_z_score
 from core.metrics import REQUEST_COUNTER
@@ -71,16 +70,6 @@ async def get_stocks_5y(
 ) -> dict[str, list[Stock5YResponse]]:
     REQUEST_COUNTER.labels(endpoint="/stocks/5y").inc()
     return get_stock_prices_by_period("5y", symbols, db)
-
-
-@router.get("/20y")
-@cache_stock_data(ttl=86400)
-async def get_stocks_20y(
-    symbols: str = Query(..., description="Comma-separated list of stock symbols"),
-    db: Session = Depends(get_db),
-) -> dict[str, list[Stock20YResponse]]:
-    REQUEST_COUNTER.labels(endpoint="/stocks/20y").inc()
-    return get_stock_prices_by_period("20y", symbols, db)
 
 
 @router.get("/symbols")
@@ -145,7 +134,6 @@ def get_stock_prices_by_period(
         "1y": relativedelta(years=1),
         "5y": relativedelta(years=5),
         "10y": relativedelta(years=10),
-        "20y": relativedelta(years=20),
     }
 
     if period not in period_mapping:

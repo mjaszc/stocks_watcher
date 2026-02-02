@@ -38,7 +38,6 @@ class StockData(Base):
     norm_6mo: Mapped[Decimal] = mapped_column(DECIMAL(12, 2), nullable=True)
     norm_1y: Mapped[Decimal] = mapped_column(DECIMAL(12, 2), nullable=True)
     norm_5y: Mapped[Decimal] = mapped_column(DECIMAL(12, 2), nullable=True)
-    norm_20y: Mapped[Decimal] = mapped_column(DECIMAL(12, 2), nullable=True)
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime, default=datetime.now(timezone.utc)

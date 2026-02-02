@@ -124,7 +124,7 @@ async def precache_stock_data():
         "cost.us",
         "amd.us",
     ]
-    available_timeframes = ["1mo", "3mo", "6mo", "1y", "5y", "20y"]
+    available_timeframes = ["1mo", "3mo", "6mo", "1y", "5y"]
 
     ttl = 86400
     symbols_str = ",".join(most_known_stock_symbols)
