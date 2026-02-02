@@ -16,6 +16,7 @@ from schemas.stock_data import (
     Stock5YResponse,
 )
 from data.z_score import extract_normalized_prices, prices_to_numpy_arr, calc_z_score
+from data.performance import get_performance_ranking
 from core.metrics import REQUEST_COUNTER
 from utils.decorators import cache_stock_data
 
@@ -107,6 +108,17 @@ async def get_stock_anomalies(
         raise HTTPException(status_code=500, detail="Failed to analyze stocks data")
 
 
+@router.get("/performance/{timeframe}")
+async def get_market_movers(timeframe: str, symbols: str = Query(...)):
+    """
+    Returns the Best and Worst performing stocks for the given timeframe.
+    """
+    price_data = await extract_normalized_prices(timeframe, symbols)
+    result = get_performance_ranking(price_data)
+
+    return result
+
+
 def get_max_date():
     """
     Find max date inside db
@@ -133,7 +145,6 @@ def get_stock_prices_by_period(
         "6mo": relativedelta(months=6),
         "1y": relativedelta(years=1),
         "5y": relativedelta(years=5),
-        "10y": relativedelta(years=10),
     }
 
     if period not in period_mapping:
