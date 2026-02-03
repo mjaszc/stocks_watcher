@@ -1,47 +1,31 @@
-import httpx
-import re
 import numpy as np
 import numpy.typing as npt
 from decimal import Decimal
-from typing import List, Dict, Any
+from typing import List, Dict
+from sqlalchemy.orm import Session
 
+from services.stocks import get_stock_prices_by_period
 from core.config import settings
-
-STOCKS_API_URL = f"{settings.DOMAIN}{settings.API_V1_STR}/stocks"
-
-
-async def fetch_stock_data(timeframe: str, symbols: str):
-    """
-    Calls the specific timeframe endpoint dynamically.
-    Args:
-        timeframe (str): '1mo', '3mo', '1y', etc.
-        symbols (str): Comma-separated string like 'AAPL.US,TSLA.US'
-    Returns:
-
-    """
-    url = f"{STOCKS_API_URL}/{timeframe}"
-    params = {"symbols": symbols.strip()}
-
-    async with httpx.AsyncClient() as client:
-        response = await client.get(url, params=params)
-        response.raise_for_status()
-        return response.json()
 
 
 async def extract_normalized_prices(
-    timeframe: str, symbols
+    timeframe: str, symbols: str, db: Session
 ) -> Dict[str, List[Decimal]]:
-    raw_data = await fetch_stock_data(timeframe, symbols)
-    column_name = f"norm_{timeframe}"
 
+    raw_data_models = get_stock_prices_by_period(timeframe, symbols, db)
+
+    column_name = f"norm_{timeframe}"
     results = {}
 
-    for symbol, records in raw_data.items():
-        results[symbol] = [
-            Decimal(record[column_name])
-            for record in records
-            if column_name in record and record[column_name] is not None
-        ]
+    for symbol, records in raw_data_models.items():
+        price_list = []
+        for record in records:
+            val = getattr(record, column_name, None)
+
+            if val is not None:
+                price_list.append(Decimal(val))
+
+        results[symbol] = price_list
 
     return results
 
