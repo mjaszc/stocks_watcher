@@ -28,14 +28,12 @@ interface StockData {
   norm_6mo?: string;
   norm_1y?: string;
   norm_5y?: string;
-  norm_20y?: string;
 }
 
 interface ChartData {
   [symbol: string]: StockData[];
 }
 
-// --- NEW INTERFACES FOR ANOMALIES ---
 interface Anomaly {
   date_index: number;
   price: number;
@@ -47,14 +45,12 @@ interface AnomalyData {
   [symbol: string]: Anomaly[];
 }
 
-// Map selected timeframe accordingly to norm price field from api
 const timeframeToNormField: Record<string, keyof StockData> = {
   "1mo": "norm_1mo",
   "3mo": "norm_3mo",
   "6mo": "norm_6mo",
   "1y": "norm_1y",
   "5y": "norm_5y",
-  "20y": "norm_20y",
 };
 
 function App() {
@@ -74,7 +70,6 @@ function App() {
     { label: "6 Months", value: "6mo" },
     { label: "1 Year", value: "1y" },
     { label: "5 Years", value: "5y" },
-    { label: "20 Years", value: "20y" },
   ];
 
   const stockSelectOptions = stockOptions.map((symbol) => ({
