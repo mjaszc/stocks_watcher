@@ -6,12 +6,15 @@ x-app-base: &app-base
     - app-network
   restart: unless-stopped
   environment: &common-env
+    ENVIRONMENT: staging
     POSTGRES_SERVER: db
     POSTGRES_PORT: ${POSTGRES_PORT}
     POSTGRES_DB: ${POSTGRES_DB}
     POSTGRES_USER: ${POSTGRES_USER}
     POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     CELERY_BROKER_URL: amqp://${RABBITMQ_USER}:${RABBITMQ_PASS}@rabbitmq:5672/${RABBITMQ_VHOST}
+    REDIS_HOST: ${REDIS_HOST}
+    REDIS_URL: ${REDIS_URL}
 
 services:
   db:

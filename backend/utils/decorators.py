@@ -1,7 +1,5 @@
-import os
 import json
 from functools import wraps
-from fastapi import HTTPException
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy.orm import Session
 import redis.asyncio as redis

@@ -47,7 +47,7 @@ class Settings(BaseSettings):
     POSTGRES_DB: str = ""
 
     REDIS_URL: str = ""
-    REDIS_HOST: str = "localhost"
+    REDIS_HOST: str = ""
 
     @computed_field
     @property

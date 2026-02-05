@@ -23,7 +23,7 @@ router = APIRouter(prefix="/stocks", tags=["stocks"])
 
 @router.get("/1mo")
 @cache_stock_data(ttl=86400)
-async def get_stocks_1m(
+async def get_stocks_1mo(
     symbols: str = Query(..., description="Comma-separated list of stock symbols"),
     db: Session = Depends(get_db),
 ) -> dict[str, list[Stock1MoResponse]]:
@@ -33,7 +33,7 @@ async def get_stocks_1m(
 
 @router.get("/3mo")
 @cache_stock_data(ttl=86400)
-async def get_stocks_3m(
+async def get_stocks_3mo(
     symbols: str = Query(..., description="Comma-separated list of stock symbols"),
     db: Session = Depends(get_db),
 ) -> dict[str, list[Stock3MoResponse]]:
@@ -43,7 +43,7 @@ async def get_stocks_3m(
 
 @router.get("/6mo")
 @cache_stock_data(ttl=86400)
-async def get_stocks_6m(
+async def get_stocks_6mo(
     symbols: str = Query(..., description="Comma-separated list of stock symbols"),
     db: Session = Depends(get_db),
 ) -> dict[str, list[Stock6MoResponse]]:
